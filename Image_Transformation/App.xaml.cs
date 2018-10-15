@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Image_Transformation.ViewModels;
+using Image_Transformation.Views;
 using System.Windows;
 
 namespace Image_Transformation
@@ -13,5 +9,16 @@ namespace Image_Transformation
     /// </summary>
     public partial class App : Application
     {
+        protected override void OnStartup(StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            MainWindow = new MainView
+            {
+                DataContext = new MainViewModel(new ImageLoaderBuilder())
+            };
+
+            MainWindow.Show();
+        }
     }
 }
