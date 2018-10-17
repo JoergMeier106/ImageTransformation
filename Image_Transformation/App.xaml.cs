@@ -15,7 +15,7 @@ namespace Image_Transformation
 
             MainWindow = new MainView
             {
-                DataContext = new MainViewModel(new ImageLoaderBuilder())
+                DataContext = new MainViewModel(new BitmapCreatorBuilder())
             };
 
             MainWindow.Show();

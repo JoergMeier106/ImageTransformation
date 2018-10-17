@@ -8,58 +8,76 @@
         Title="Image Transformation" Height="450" Width="800">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="3*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="3*" />
+            <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
-        <Image Grid.Column="0" 
-               Source="{Binding Image}"/>
-        <StackPanel Grid.Column="1">
-            <Button Grid.Column="1" 
-                Content="Open Image" 
+        <Label Content="No Image loaded"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Center" />
+        <Image Grid.Column="0"
+               Source="{Binding Image}"
+               Stretch="Uniform" />
+        <StackPanel Grid.Column="1" Background="AliceBlue">
+            <Button Grid.Column="1"
+                Content="Open Image"
                 Command="{Binding OpenImage}"
                 Margin="10,10,10,10"
                 Padding="0,5,0,5"
-                BorderBrush="AliceBlue"/>            
+                BorderBrush="Gray"
+                Background="AliceBlue" />
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="1*"/>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="2*"/>
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="1*" />
+                    <ColumnDefinition Width="2*" />
+                    <ColumnDefinition Width="2*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
-                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="2"
-                       Content="Image Format:"/>
+                <Label Grid.Column="0" Grid.Row="0"
+                       Content="Height:" />
                 <Label Grid.Column="3" Grid.Row="0"
-                       Content="{Binding FileFormat}"/>
-                <Label Grid.Column="0" Grid.Row="1" 
-                       Content="Layer:"
-                       IsEnabled="{Binding IsRawImage}"/>
-                <Label Grid.Column="1" Grid.Row="1"
-                       Content="{Binding CurrentLayer}"/>
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="1"
-                        Interval="{Binding LayerCount}"
-                        Value="{Binding CurrentLayer, Mode=TwoWay}"
-                        IsSnapToTickEnabled="True"
-                        Ticks="1"
-                        IsEnabled="{Binding IsRawImage}"/>
-                <Label Grid.Column="0" Grid.Row="2" 
-                       Content="Height:"/>
-                <Label Grid.Column="3" Grid.Row="2" 
                        Content="{Binding ImageHeight}"
-                       IsEnabled="{Binding IsRawFormat}"
-                       Margin="0,2,10,2"/>
-                <Label Grid.Column="0" Grid.Row="3" 
-                       Content="Width:"/>
-                <Label Grid.Column="3" Grid.Row="3" 
+                       Margin="0,2,10,2" />
+                <Label Grid.Column="0" Grid.Row="1"
+                       Content="Width:" />
+                <Label Grid.Column="3" Grid.Row="1"
                        Content="{Binding ImageWidth}"
-                       IsEnabled="{Binding IsRawFormat}"
-                       Margin="0,2,10,2"/>
+                       Margin="0,2,10,2" />
+                <Label Grid.Column="0" Grid.Row="2"
+                       Content="Layer:"
+                       IsEnabled="{Binding LayerSliderEnabled}" />
+                <Label Grid.Column="1" Grid.Row="2"
+                       Content="{Binding CurrentLayer}"
+                       IsEnabled="{Binding LayerSliderEnabled}" />
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2"
+                        Maximum="{Binding LayerCount}"
+                        Value="{Binding CurrentLayer, Mode=OneWayToSource}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding LayerSliderEnabled}" />
+                <Label Grid.Column="0" Grid.Row="3"
+                       Content="Dx:"
+                       IsEnabled="{Binding LayerSliderEnabled}" />
+                <Label Grid.Column="1" Grid.Row="3"
+                       Content="{Binding ShiftDx}" />
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="3"
+                        Maximum="{Binding ImageWidth}"
+                        Value="{Binding ShiftDx, Mode=OneWayToSource}"
+                        IsSnapToTickEnabled="True" />
+                <Label Grid.Column="0" Grid.Row="4"
+                       Content="Dy:" />
+                <Label Grid.Column="1" Grid.Row="4"
+                       Content="{Binding ShiftDy}" />
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="4"
+                        Maximum="{Binding ImageHeight}"
+                        Value="{Binding ShiftDy, Mode=OneWayToSource}"
+                        IsSnapToTickEnabled="True" />
             </Grid>
         </StackPanel>
     </Grid>
