@@ -23,18 +23,7 @@ namespace Image_Transformation
             int bitsPerPixel = 16;
             int stride = (Width * bitsPerPixel + 7) / 8;
 
-            var bitmap = BitmapSource.Create(Height, Width, 96, 96, PixelFormats.Gray16, null, imageBytes, stride);
-            //MemoryStream memory = new MemoryStream();
-
-            //var encoder = new BmpBitmapEncoder();
-            //encoder.Frames.Add(BitmapFrame.Create(bitmap));
-            //encoder.Save(memory);
-
-            //BitmapImage bitmapImage = new BitmapImage();
-            //bitmapImage.BeginInit();
-            //bitmapImage.StreamSource = memory;
-            //bitmapImage.EndInit();
-            return bitmap;
+            return BitmapSource.Create(Width, Height, 96, 96, PixelFormats.Gray16, null, imageBytes, stride);
         }
     }
 }

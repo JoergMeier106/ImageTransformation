@@ -9,15 +9,18 @@ namespace Image_Transformation.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly IBitmapCreatorBuilder _bitmapCreatorBuilder;
-        private string _currentFileName;
         private string _fileFormat;
         private ImageSource _image;
         private int _imageHeight;
+        private bool _imageOpen;
         private int _imageWidth;
-        private bool _isRawImage;
         private int _layerCount;
+        private bool _layerSliderEnabled;
+        private int _shearBx;
+        private int _shearBy;
         private int _shiftDx;
         private int _shiftDy;
+        private bool _sliderEnabled;
 
         public MainViewModel(IBitmapCreatorBuilder bitmapCreatorBuilder)
         {
@@ -25,6 +28,20 @@ namespace Image_Transformation.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public double Brightness
+        {
+            get
+            {
+                return _bitmapCreatorBuilder.Brightness;
+            }
+            set
+            {
+                _bitmapCreatorBuilder.SetBrightness(value);
+                UpdateImage();
+                RaisePropertyChanged(nameof(Brightness));
+            }
+        }
 
         public int CurrentLayer
         {
@@ -35,7 +52,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _bitmapCreatorBuilder.SetLayer(value);
-                ShowImage();
+                UpdateImage();
                 RaisePropertyChanged(nameof(CurrentLayer));
             }
         }
@@ -109,11 +126,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _isRawImage;
+                return _layerSliderEnabled;
             }
             set
             {
-                _isRawImage = value;
+                _layerSliderEnabled = value;
                 RaisePropertyChanged(nameof(LayerSliderEnabled));
             }
         }
@@ -124,6 +141,7 @@ namespace Image_Transformation.ViewModels
             {
                 return new RelayCommand((args) =>
                 {
+                    _imageOpen = false;
                     OpenFileDialog openFileDialog = new OpenFileDialog
                     {
                         Filter = " RAW Files (*.raw)|*.raw"
@@ -131,10 +149,43 @@ namespace Image_Transformation.ViewModels
 
                     if (openFileDialog.ShowDialog() == true)
                     {
-                        _currentFileName = openFileDialog.FileName;
+                        Resetvalues();
+
+                        _bitmapCreatorBuilder.SetPath(openFileDialog.FileName);
                         ShowImage();
                     }
+                    _imageOpen = true;
                 });
+            }
+        }
+
+        public int ShearBx
+        {
+            get
+            {
+                return _shearBx;
+            }
+            set
+            {
+                _shearBx = value;
+                _bitmapCreatorBuilder.Shear(_shearBx, _shearBy);
+                UpdateImage();
+                RaisePropertyChanged(nameof(ShearBx));
+            }
+        }
+
+        public int ShearBy
+        {
+            get
+            {
+                return _shearBy;
+            }
+            set
+            {
+                _shearBy = value;
+                _bitmapCreatorBuilder.Shear(_shearBx, _shearBy);
+                UpdateImage();
+                RaisePropertyChanged(nameof(ShearBy));
             }
         }
 
@@ -148,7 +199,7 @@ namespace Image_Transformation.ViewModels
             {
                 _shiftDx = value;
                 _bitmapCreatorBuilder.Shift(_shiftDx, _shiftDy);
-                ShowImage();
+                UpdateImage();
                 RaisePropertyChanged(nameof(ShiftDx));
             }
         }
@@ -163,8 +214,21 @@ namespace Image_Transformation.ViewModels
             {
                 _shiftDy = value;
                 _bitmapCreatorBuilder.Shift(_shiftDx, _shiftDy);
-                ShowImage();
+                UpdateImage();
                 RaisePropertyChanged(nameof(ShiftDy));
+            }
+        }
+
+        public bool SliderEnabled
+        {
+            get
+            {
+                return _sliderEnabled;
+            }
+            set
+            {
+                _sliderEnabled = value;
+                RaisePropertyChanged(nameof(SliderEnabled));
             }
         }
 
@@ -173,17 +237,35 @@ namespace Image_Transformation.ViewModels
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
         }
 
+        private void Resetvalues()
+        {
+            Brightness = 0;
+            CurrentLayer = 0;
+            ShiftDx = 0;
+            ShiftDy = 0;
+            ShearBx = 0;
+            ShearBy = 0;
+        }
+
         private void ShowImage()
         {
-            FileFormat = Path.GetExtension(_currentFileName);
+            FileFormat = Path.GetExtension(_bitmapCreatorBuilder.Path);
 
-            var bitmapCreator = _bitmapCreatorBuilder.SetPath(_currentFileName)
-                                              .Build();
+            var bitmapCreator = _bitmapCreatorBuilder.Build();
             Image = bitmapCreator.GetImage();
             ImageHeight = (int)Image.Height;
             ImageWidth = (int)Image.Width;
             LayerCount = bitmapCreator.LayerCount;
-            LayerSliderEnabled = FileFormat.ToLower() == ".raw" && LayerCount > 1;
+            LayerSliderEnabled = LayerCount > 1;
+            SliderEnabled = true;
+        }
+
+        private void UpdateImage()
+        {
+            if (_imageOpen)
+            {
+                ShowImage();
+            }
         }
     }
 }

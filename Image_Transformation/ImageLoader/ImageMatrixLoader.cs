@@ -5,31 +5,39 @@ namespace Image_Transformation
 {
     public sealed class ImageMatrixLoader : IImageLoader
     {
-        private readonly Matrix _imageMatrix;
-
-        public ImageMatrixLoader(string path, int layer)
-        {
-            Path = path;
-            ReadMetaInformation();
-
-            byte[] rawBytes = File.ReadAllBytes(Path);
-            byte[] imageBytes = GetLayerBytes(rawBytes, layer);
-            LayerCount = rawBytes.Length / (Width * Height * 2);
-
-            _imageMatrix = new Matrix(Height, Width, imageBytes);
-        }
-
-        public double BrightnessFactor { get; private set; }
+        private string _lastPath;
+        private int _lastLayer;
 
         public int Height { get; private set; }
+        public int Layer { get; set; }
+
+        private byte[] _imageBytes;
 
         public int LayerCount { get; private set; }
-
-        public string Path { get; private set; }
+        public double MetaFileBrightnessFactor { get; private set; }
+        public string Path { get; set; }
 
         public int Width { get; private set; }
 
-        public Matrix GetImageMatrix() => _imageMatrix;
+        public bool MatrixChanged { get; private set; }
+
+        public Matrix GetImageMatrix()
+        {
+            MatrixChanged = false;
+            if (_lastPath != Path || _lastLayer != Layer)
+            {
+                MatrixChanged = true;
+                _lastPath = Path;
+                _lastLayer = Layer;
+
+                ReadMetaInformation();
+
+                byte[] rawBytes = File.ReadAllBytes(Path);
+                _imageBytes = GetLayerBytes(rawBytes, Layer);
+                LayerCount = rawBytes.Length / (Width * Height * 2);
+            }
+            return new Matrix(Height, Width, _imageBytes);
+        }
 
         private byte[] GetLayerBytes(byte[] rawBytes, int layer)
         {
@@ -50,7 +58,7 @@ namespace Image_Transformation
 
             Width = metaInformation.Width;
             Height = metaInformation.Height;
-            BrightnessFactor = metaInformation.BrightnessFactor;
+            MetaFileBrightnessFactor = metaInformation.BrightnessFactor;
         }
     }
 }

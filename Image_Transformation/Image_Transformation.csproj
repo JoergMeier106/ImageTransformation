@@ -65,6 +65,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Converter\IBitmapCreator.cs" />
+    <Compile Include="Converter\ToNegativeConverter.cs" />
     <Compile Include="ImageLoader\IImageLoader.cs" />
     <Compile Include="ImageLoader\IBitmapCreatorBuilder.cs" />
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
@@ -75,6 +76,7 @@
     <Compile Include="ImageLoader\ImageMetaInformation.cs" />
     <Compile Include="ImageTransformations\AdjustBrightnessOperation.cs" />
     <Compile Include="ImageTransformations\IImageOperation.cs" />
+    <Compile Include="ImageTransformations\ShearingOperation.cs" />
     <Compile Include="ImageTransformations\ShiftOperation.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />

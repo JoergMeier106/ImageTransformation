@@ -4,18 +4,30 @@ namespace Image_Transformation
 {
     public class BitmapCreatorBuilder : IBitmapCreatorBuilder
     {
+        private readonly AdjustBrightnessOperation _brightnessOperation;
+        private readonly ImageMatrixLoader _imageMatrixLoader;
         private readonly List<IImageOperation> _imageOperations;
-        private bool _shiftEnabled;
+        private readonly MatrixToBitmapImageConverter _matrixToBitmapConverter;
+        private readonly ShearingOperation _shearingOperation;
+        private readonly ShiftOperation _shiftOperation;
 
         public BitmapCreatorBuilder()
         {
             _imageOperations = new List<IImageOperation>();
+            _imageMatrixLoader = new ImageMatrixLoader();
+            _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
+            _shearingOperation = new ShearingOperation(_brightnessOperation);
+            _shiftOperation = new ShiftOperation(_shearingOperation);
+            _matrixToBitmapConverter = new MatrixToBitmapImageConverter(_shiftOperation);
         }
 
-        public int Dx { get; private set; }
-        public int Dy { get; private set; }
-        public int Layer { get; private set; }
-        public string Path { get; private set; }
+        public double Brightness => _brightnessOperation.BrightnessFactor;
+        public int Bx => _shearingOperation.Bx;
+        public int By => _shearingOperation.By;
+        public int Dx => _shiftOperation.Dx;
+        public int Dy => _shiftOperation.Dy;
+        public int Layer => _imageMatrixLoader.Layer;
+        public string Path => _imageMatrixLoader.Path;
 
         public IBitmapCreatorBuilder AddTransformation(IImageOperation transformation)
         {
@@ -25,11 +37,7 @@ namespace Image_Transformation
 
         public IBitmapCreator Build()
         {
-            ImageMatrixLoader imageByteLoader = new ImageMatrixLoader(Path, Layer);
-            AdjustBrightnessOperation brightnessOperation = new AdjustBrightnessOperation(imageByteLoader);
-            ShiftOperation shiftOperation = new ShiftOperation(brightnessOperation, Dx, Dy);
-
-            return new MatrixToBitmapImageConverter(brightnessOperation);
+            return _matrixToBitmapConverter;
         }
 
         public IBitmapCreatorBuilder ClearAllTransformation()
@@ -38,23 +46,36 @@ namespace Image_Transformation
             return this;
         }
 
+        public IBitmapCreatorBuilder SetBrightness(double brightness)
+        {
+            _brightnessOperation.BrightnessFactor = brightness;
+            _brightnessOperation.UseCustomBrightness = brightness > 0;
+            return this;
+        }
+
         public IBitmapCreatorBuilder SetLayer(int layer)
         {
-            Layer = layer;
+            _imageMatrixLoader.Layer = layer;
             return this;
         }
 
         public IBitmapCreatorBuilder SetPath(string path)
         {
-            Path = path;
+            _imageMatrixLoader.Path = path;
+            return this;
+        }
+
+        public IBitmapCreatorBuilder Shear(int bx, int by)
+        {
+            _shearingOperation.Bx = bx;
+            _shearingOperation.By = by;
             return this;
         }
 
         public IBitmapCreatorBuilder Shift(int dx, int dy)
         {
-            _shiftEnabled = true;
-            Dx = dx;
-            Dy = dy;
+            _shiftOperation.Dx = dx;
+            _shiftOperation.Dy = dy;
             return this;
         }
     }
