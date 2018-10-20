@@ -74,10 +74,12 @@
     <Compile Include="ImageLoader\Matrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
     <Compile Include="ImageLoader\ImageMetaInformation.cs" />
-    <Compile Include="ImageTransformations\AdjustBrightnessOperation.cs" />
-    <Compile Include="ImageTransformations\IImageOperation.cs" />
-    <Compile Include="ImageTransformations\ShearingOperation.cs" />
-    <Compile Include="ImageTransformations\ShiftOperation.cs" />
+    <Compile Include="ImageOperations\AdjustBrightnessOperation.cs" />
+    <Compile Include="ImageOperations\IImageOperation.cs" />
+    <Compile Include="ImageOperations\RotationOperation.cs" />
+    <Compile Include="ImageOperations\ScalingOperation.cs" />
+    <Compile Include="ImageOperations\ShearingOperation.cs" />
+    <Compile Include="ImageOperations\ShiftingOperation.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="Views\MainView.xaml.cs">

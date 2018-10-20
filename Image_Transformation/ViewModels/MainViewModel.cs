@@ -16,6 +16,8 @@ namespace Image_Transformation.ViewModels
         private int _imageWidth;
         private int _layerCount;
         private bool _layerSliderEnabled;
+        private int _scaleSx;
+        private int _scaleSy;
         private int _shearBx;
         private int _shearBy;
         private int _shiftDx;
@@ -159,6 +161,50 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        public double RotationAlpha
+        {
+            get
+            {
+                return _bitmapCreatorBuilder.Alpha;
+            }
+            set
+            {
+                _bitmapCreatorBuilder.Rotate(value);
+                UpdateImage();
+                RaisePropertyChanged(nameof(RotationAlpha));
+            }
+        }
+
+        public int ScaleSx
+        {
+            get
+            {
+                return _scaleSx;
+            }
+            set
+            {
+                _scaleSx = value;
+                _bitmapCreatorBuilder.Scale(_scaleSx, _scaleSy);
+                UpdateImage();
+                RaisePropertyChanged(nameof(ScaleSx));
+            }
+        }
+
+        public int ScaleSy
+        {
+            get
+            {
+                return _scaleSy;
+            }
+            set
+            {
+                _scaleSy = value;
+                _bitmapCreatorBuilder.Scale(_scaleSx, _scaleSy);
+                UpdateImage();
+                RaisePropertyChanged(nameof(ScaleSy));
+            }
+        }
+
         public int ShearBx
         {
             get
@@ -245,6 +291,9 @@ namespace Image_Transformation.ViewModels
             ShiftDy = 0;
             ShearBx = 0;
             ShearBy = 0;
+            RotationAlpha = 0;
+            ScaleSx = 1;
+            ScaleSy = 1;
         }
 
         private void ShowImage()

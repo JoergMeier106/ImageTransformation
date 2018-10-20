@@ -28,9 +28,9 @@ namespace Image_Transformation
             MatrixChanged = false;
             Matrix imageMatrix = _imageLoader.GetImageMatrix();
 
-            if (Bx != 0 || By != 0)
+            if (OperationShouldBeExecuted())
             {
-                if (_lastBx != Bx || _lastBy != By || _imageLoader.MatrixChanged)
+                if (MatrixMustBeUpdated())
                 {
                     MatrixChanged = true;
                     _lastBx = Bx;
@@ -59,6 +59,16 @@ namespace Image_Transformation
 
                 return imageMatrix;
             }
+        }
+
+        private bool MatrixMustBeUpdated()
+        {
+            return _lastBx != Bx || _lastBy != By || _imageLoader.MatrixChanged;
+        }
+
+        private bool OperationShouldBeExecuted()
+        {
+            return Bx != 0 || By != 0;
         }
     }
 }

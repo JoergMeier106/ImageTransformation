@@ -102,21 +102,48 @@ namespace Image_Transformation
             });
         }
 
+        public static Matrix Scale(Matrix sourceMatrix, Matrix targetMatrix, int sx, int sy)
+        {
+            return Transform(sourceMatrix, targetMatrix, (x, y) =>
+            {
+                x = x * sx;
+                y = y * sy;
+                return (x, y);
+            });
+        }
+        public static Matrix Rotate(Matrix sourceMatrix, Matrix targetMatrix, double alpha)
+        {
+            return Transform(sourceMatrix, targetMatrix, (x, y) =>
+            {
+                int xc = targetMatrix.Width / 2;
+                int yc = targetMatrix.Height / 2;
+
+                x = x - xc;
+                y = y - yc;
+
+                x = (int)(x * Math.Cos(alpha) - y * Math.Sin(alpha));
+                y = (int)(y * Math.Cos(alpha) + x * Math.Sin(alpha));
+
+                x = x + xc;
+                y = y + yc;
+
+                return (x, y);
+            });
+        }
+
+
         public static Matrix Transform(Matrix sourceMatrix, Matrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
-            for (int y = 0; y < targetMatrix.Height; y++)
+            for (int y = 0; y < sourceMatrix.Height; y++)
             {
-                for (int x = 0; x < targetMatrix.Width; x++)
+                for (int x = 0; x < sourceMatrix.Width; x++)
                 {
-                    if (PointIsInBounds(x, y, sourceMatrix.Height, sourceMatrix.Width))
-                    {
-                        ushort targetValue = sourceMatrix[y, x];
-                        var targetPoint = transformFunction(x, y);
+                    ushort targetValue = sourceMatrix[y, x];
+                    var targetPoint = transformFunction(x, y);
 
-                        if (PointIsInBounds(targetPoint.x, targetPoint.y, targetMatrix.Height, targetMatrix.Width))
-                        {
-                            targetMatrix[targetPoint.y, targetPoint.x] = targetValue;
-                        }
+                    if (PointIsInBounds(targetPoint.x, targetPoint.y, targetMatrix.Height, targetMatrix.Width))
+                    {
+                        targetMatrix[targetPoint.y, targetPoint.x] = targetValue;
                     }
                 }
             }

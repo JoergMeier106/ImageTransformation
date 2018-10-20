@@ -26,24 +26,24 @@
             Matrix sourceMatrix = _imageLoader.GetImageMatrix();
             if (UseCustomBrightness)
             {
-                if (_lastBrightnessFactor != BrightnessFactor || _imageLoader.MatrixChanged)
-                {
-                    MatrixChanged = true;
-                    _lastBrightnessFactor = BrightnessFactor;
-                    _cashedMatrix = sourceMatrix * BrightnessFactor;
-                }
+                AdjustBrightness(sourceMatrix, BrightnessFactor);
             }
-            else
+            else if (_lastBrightnessFactor != MetaFileBrightnessFactor || _imageLoader.MatrixChanged)
             {
-                if (_lastBrightnessFactor != MetaFileBrightnessFactor || _imageLoader.MatrixChanged)
-                {
-                    MatrixChanged = true;
-                    _lastBrightnessFactor = MetaFileBrightnessFactor;
-                    _cashedMatrix = sourceMatrix * MetaFileBrightnessFactor;
-                }
+                AdjustBrightness(sourceMatrix, MetaFileBrightnessFactor);
             }
 
             return _cashedMatrix;
+        }
+
+        private void AdjustBrightness(Matrix sourceMatrix, double brightnessFactor)
+        {
+            if (_lastBrightnessFactor != BrightnessFactor || _imageLoader.MatrixChanged)
+            {
+                MatrixChanged = true;
+                _lastBrightnessFactor = brightnessFactor;
+                _cashedMatrix = sourceMatrix * brightnessFactor;
+            }
         }
     }
 }
