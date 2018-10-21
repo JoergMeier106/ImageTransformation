@@ -12,13 +12,11 @@
         }
 
         public double BrightnessFactor { get; set; }
-        public int Height => _imageLoader.Height;
         public int LayerCount => _imageLoader.LayerCount;
         public bool MatrixChanged { get; private set; }
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
-        public string Path => _imageLoader.Path;
         public bool UseCustomBrightness { get; set; }
-        public int Width => _imageLoader.Width;
+        public bool TransformationAdded => _imageLoader.TransformationAdded;
 
         public Matrix GetImageMatrix()
         {
@@ -28,7 +26,7 @@
             {
                 AdjustBrightness(sourceMatrix, BrightnessFactor);
             }
-            else if (_lastBrightnessFactor != MetaFileBrightnessFactor || _imageLoader.MatrixChanged)
+            else
             {
                 AdjustBrightness(sourceMatrix, MetaFileBrightnessFactor);
             }

@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Image_Transformation
 {
-    public struct Matrix
+    public class Matrix
     {
-        private ushort[,] _matrix;
+        private readonly ushort[,] _matrix;
+        private Dictionary<string, Func<int, int, (int x, int y)>> _imageTransformations;
 
         public Matrix(int height, int width, byte[] bytes)
         {
             Height = height;
             Width = width;
             _matrix = new ushort[Height, Width];
+            _imageTransformations = new Dictionary<string, Func<int, int, (int x, int y)>>();
 
             CreateMatrix(bytes);
         }
@@ -48,19 +52,19 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static Matrix operator *(Matrix matrix, double value)
+        public static Matrix operator * (Matrix matrix, double value)
         {
             Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
             return matrix;
         }
 
-        public static Matrix operator /(Matrix matrix, double value)
+        public static Matrix operator / (Matrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
             return matrix;
         }
 
-        public static Matrix operator +(Matrix matrix, double value)
+        public static Matrix operator + (Matrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
             return matrix;
@@ -71,66 +75,39 @@ namespace Image_Transformation
             return y >= 0 && y < height && x >= 0 && x < width;
         }
 
-        public static Matrix Shear(Matrix sourceMatrix, Matrix targetMatrix, int bx, int by)
+        public static Matrix Transform(Matrix sourceMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
-            return Transform(sourceMatrix, targetMatrix, (x, y) =>
-            {
-                x = x + bx * y;
-                y = y + by * x;
+            Dictionary<(int x, int y), ushort> transformedPoints = new Dictionary<(int x, int y), ushort>();
 
-                if (bx < 0)
+            for (int y = 0; y < sourceMatrix.Height; y++)
+            {
+                for (int x = 0; x < sourceMatrix.Width; x++)
                 {
-                    x += sourceMatrix.Width * Math.Abs(bx);
+                    ushort targetValue = sourceMatrix[y, x];
+
+                    var targetPoint = transformFunction(x, y);
+                    transformedPoints[(targetPoint.x, targetPoint.y)] = targetValue;
                 }
+            }
 
-                if (by < 0)
-                {
-                    y += sourceMatrix.Height * Math.Abs(by);
-                }
+            int smallestX = transformedPoints.Select(point => point.Key.x).Min();
+            int smallestY = transformedPoints.Select(point => point.Key.y).Min();
 
-                return (Math.Abs(x), Math.Abs(y));
-            });
-        }
+            int biggestX = transformedPoints.Select(point => point.Key.x).Max();
+            int biggestY = transformedPoints.Select(point => point.Key.y).Max();
 
-        public static Matrix Shift(Matrix sourceMatrix, Matrix targetMatrix, int dx, int dy)
-        {
-            return Transform(sourceMatrix, targetMatrix, (x, y) =>
+            int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
+            int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
+
+            Matrix transformedMatrix = new Matrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
+
+            foreach(var (x, y) in transformedPoints.Keys)
             {
-                x = x + dx;
-                y = y + dy;
-                return (x, y);
-            });
+                transformedMatrix[y + Math.Abs(smallestY), x + Math.Abs(smallestX)] = transformedPoints[(x, y)];
+            }
+
+            return transformedMatrix;
         }
-
-        public static Matrix Scale(Matrix sourceMatrix, Matrix targetMatrix, int sx, int sy)
-        {
-            return Transform(sourceMatrix, targetMatrix, (x, y) =>
-            {
-                x = x * sx;
-                y = y * sy;
-                return (x, y);
-            });
-        }
-        public static Matrix Rotate(Matrix sourceMatrix, Matrix targetMatrix, double alpha)
-        {
-            return Transform(sourceMatrix, targetMatrix, (x, y) =>
-            {
-                int xc = targetMatrix.Width / 2;
-                int yc = targetMatrix.Height / 2;
-
-                x = x - xc;
-                y = y - yc;
-
-                x = (int)(x * Math.Cos(alpha) - y * Math.Sin(alpha));
-                y = (int)(y * Math.Cos(alpha) + x * Math.Sin(alpha));
-
-                x = x + xc;
-                y = y + yc;
-
-                return (x, y);
-            });
-        }
-
 
         public static Matrix Transform(Matrix sourceMatrix, Matrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
@@ -150,6 +127,19 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
+        public Matrix ExecuteTransformations()
+        {
+            return Transform(this, (int x, int y) =>
+            {
+                var point = (x, y);
+                foreach (var transformFunction in _imageTransformations.Values)
+                {
+                    point = transformFunction(point.x, point.y);
+                }
+                return point;
+            });
+        }
+
         public byte[] GetBytes()
         {
             byte[] bytes = new byte[Height * Width * 2];
@@ -164,6 +154,63 @@ namespace Image_Transformation
                 }
             }
             return bytes;
+        }
+
+        public Matrix Rotate(double alpha)
+        {
+            _imageTransformations["RotationOperation"] = (x, y) =>
+            {
+                int xc = Width / 2;
+                int yc = Height / 2;
+
+                x = x - xc;
+                y = y - yc;
+
+                x = (int)(x * Math.Cos(alpha) - y * Math.Sin(alpha));
+                y = (int)(y * Math.Cos(alpha) + x * Math.Sin(alpha));
+
+                x = x + xc;
+                y = y + yc;
+
+                return (x, y);
+            };
+            return this;
+        }
+
+        public Matrix Scale(int sx, int sy)
+        {
+            _imageTransformations["ScalingOperation"] = (x, y) =>
+            {
+                x = x * sx;
+                y = y * sy;
+                return (x, y);
+            };
+            return this;
+        }
+
+        public Matrix Shear(int bx, int by)
+        {
+            _imageTransformations["ShearingOperation"] = (x, y) =>
+            {
+                x = x + bx * y;
+                y = y + by * x;
+
+                return (x, y);
+            };
+            return this;
+        }
+
+        public Matrix Shift(int dx, int dy)
+        {
+            Matrix shiftedMatrix = new Matrix(Height, Width, new byte[Height * Width * 2]);
+            shiftedMatrix._imageTransformations = _imageTransformations;
+
+            return Transform(this, shiftedMatrix, (x, y) =>
+            {
+                x = x + dx;
+                y = y + dy;
+                return (x, y);
+            });
         }
 
         private int ConvertIndexToX(int index, int width)

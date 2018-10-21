@@ -2,12 +2,10 @@
 {
     public interface IImageLoader
     {
-        double MetaFileBrightnessFactor { get; }
-        int Height { get; }
         int LayerCount { get; }
-        string Path { get; }
-        int Width { get; }
         bool MatrixChanged { get; }
+        bool TransformationAdded { get; }
+        double MetaFileBrightnessFactor { get; }
 
         Matrix GetImageMatrix();
     }

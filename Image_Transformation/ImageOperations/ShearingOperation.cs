@@ -1,11 +1,8 @@
-﻿using System;
-
-namespace Image_Transformation
+﻿namespace Image_Transformation
 {
     public class ShearingOperation : IImageOperation
     {
         private readonly IImageLoader _imageLoader;
-        private Matrix _cashedMatrix;
         private int _lastBx;
         private int _lastBy;
 
@@ -16,59 +13,31 @@ namespace Image_Transformation
 
         public int Bx { get; set; }
         public int By { get; set; }
-        public int Height { get; private set; }
         public int LayerCount => _imageLoader.LayerCount;
-        public bool MatrixChanged { get; private set; }
+        public bool MatrixChanged => _imageLoader.MatrixChanged;
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
-        public string Path => _imageLoader.Path;
-        public int Width { get; private set; }
+        public bool TransformationAdded { get; private set; }
 
         public Matrix GetImageMatrix()
         {
-            MatrixChanged = false;
             Matrix imageMatrix = _imageLoader.GetImageMatrix();
+            TransformationAdded = _imageLoader.TransformationAdded;
 
-            if (OperationShouldBeExecuted())
+            if (MatrixMustBeUpdated())
             {
-                if (MatrixMustBeUpdated())
-                {
-                    MatrixChanged = true;
-                    _lastBx = Bx;
-                    _lastBy = By;
+                TransformationAdded = true;
+                _lastBx = Bx;
+                _lastBy = By;
 
-                    int absoluteBx = Math.Abs(Bx);
-                    int absoluteBy = Math.Abs(By);
-
-                    Height = imageMatrix.Height * (absoluteBy + 1 + (absoluteBy * absoluteBx));
-                    Width = imageMatrix.Width * (absoluteBx + 1);
-
-                    Matrix shearedMatrix = new Matrix(Height, Width, new byte[Height * Width * 2]);
-                    _cashedMatrix = Matrix.Shear(imageMatrix, shearedMatrix, Bx, By);
-                }
-                return _cashedMatrix;
+                return imageMatrix.Shear(Bx, By);
             }
-            else
-            {
-                Height = _imageLoader.Height;
-                Width = _imageLoader.Width;
 
-                MatrixChanged = true;
-
-                _lastBx = 0;
-                _lastBy = 0;
-
-                return imageMatrix;
-            }
+            return imageMatrix;
         }
 
         private bool MatrixMustBeUpdated()
         {
-            return _lastBx != Bx || _lastBy != By || _imageLoader.MatrixChanged;
-        }
-
-        private bool OperationShouldBeExecuted()
-        {
-            return Bx != 0 || By != 0;
+            return _lastBx != Bx || _lastBy != By;
         }
     }
 }

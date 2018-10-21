@@ -12,13 +12,23 @@ namespace Image_Transformation
             _imageOperation = imageOperation;
         }
 
-        public int Height => _imageOperation.Height;
+        public int Height { get; private set; }
         public int LayerCount => _imageOperation.LayerCount;
-        public int Width => _imageOperation.Width;
+        public int Width { get; private set; }
 
         public BitmapSource GetImage()
         {
-            byte[] imageBytes = _imageOperation.GetImageMatrix().GetBytes();
+            Matrix imageMatrix = _imageOperation.GetImageMatrix();
+            
+            if (_imageOperation.TransformationAdded)
+            {
+                imageMatrix = imageMatrix.ExecuteTransformations();
+            }
+
+            Height = imageMatrix.Height;
+            Width = imageMatrix.Width;
+
+            byte[] imageBytes = imageMatrix.GetBytes();
 
             int bitsPerPixel = 16;
             int stride = (Width * bitsPerPixel + 7) / 8;

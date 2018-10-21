@@ -5,21 +5,18 @@ namespace Image_Transformation
 {
     public sealed class ImageMatrixLoader : IImageLoader
     {
-        private string _lastPath;
+        private byte[] _imageBytes;
         private int _lastLayer;
+        private string _lastPath;
 
         public int Height { get; private set; }
         public int Layer { get; set; }
-
-        private byte[] _imageBytes;
-
         public int LayerCount { get; private set; }
+        public bool MatrixChanged { get; private set; }
         public double MetaFileBrightnessFactor { get; private set; }
         public string Path { get; set; }
-
         public int Width { get; private set; }
-
-        public bool MatrixChanged { get; private set; }
+        public bool TransformationAdded => false;
 
         public Matrix GetImageMatrix()
         {
