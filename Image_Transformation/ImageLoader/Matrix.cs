@@ -6,6 +6,10 @@ namespace Image_Transformation
 {
     public class Matrix
     {
+        private const string SHEARING_KEY = "ShearingOperation";
+        private const string SCALING_KEY = "ScalingOperation";
+        private const string ROTATING_KEY = "RotationOperation";
+
         private readonly ushort[,] _matrix;
         private Dictionary<string, Func<int, int, (int x, int y)>> _imageTransformations;
 
@@ -52,19 +56,19 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static Matrix operator * (Matrix matrix, double value)
+        public static Matrix operator *(Matrix matrix, double value)
         {
             Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
             return matrix;
         }
 
-        public static Matrix operator / (Matrix matrix, double value)
+        public static Matrix operator /(Matrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
             return matrix;
         }
 
-        public static Matrix operator + (Matrix matrix, double value)
+        public static Matrix operator +(Matrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
             return matrix;
@@ -90,23 +94,7 @@ namespace Image_Transformation
                 }
             }
 
-            int smallestX = transformedPoints.Select(point => point.Key.x).Min();
-            int smallestY = transformedPoints.Select(point => point.Key.y).Min();
-
-            int biggestX = transformedPoints.Select(point => point.Key.x).Max();
-            int biggestY = transformedPoints.Select(point => point.Key.y).Max();
-
-            int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
-            int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
-
-            Matrix transformedMatrix = new Matrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
-
-            foreach(var (x, y) in transformedPoints.Keys)
-            {
-                transformedMatrix[y + Math.Abs(smallestY), x + Math.Abs(smallestX)] = transformedPoints[(x, y)];
-            }
-
-            return transformedMatrix;
+            return CreateNewSizedMatrix(transformedPoints);
         }
 
         public static Matrix Transform(Matrix sourceMatrix, Matrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
@@ -129,15 +117,19 @@ namespace Image_Transformation
 
         public Matrix ExecuteTransformations()
         {
-            return Transform(this, (int x, int y) =>
+            if (_imageTransformations.Count > 0)
             {
-                var point = (x, y);
-                foreach (var transformFunction in _imageTransformations.Values)
+                return Transform(this, (int x, int y) =>
                 {
-                    point = transformFunction(point.x, point.y);
-                }
-                return point;
-            });
+                    var point = (x, y);
+                    foreach (var transformFunction in _imageTransformations.Values)
+                    {
+                        point = transformFunction(point.x, point.y);
+                    }
+                    return point;
+                });
+            }
+            return this;
         }
 
         public byte[] GetBytes()
@@ -158,45 +150,80 @@ namespace Image_Transformation
 
         public Matrix Rotate(double alpha)
         {
-            _imageTransformations["RotationOperation"] = (x, y) =>
+            return Transform(this, new Matrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
             {
                 int xc = Width / 2;
                 int yc = Height / 2;
 
-                x = x - xc;
-                y = y - yc;
-
-                x = (int)(x * Math.Cos(alpha) - y * Math.Sin(alpha));
-                y = (int)(y * Math.Cos(alpha) + x * Math.Sin(alpha));
-
-                x = x + xc;
-                y = y + yc;
+                x = (int)(xc + (x - xc) * Math.Cos(alpha) - (y - yc) * Math.Sin(alpha));
+                y = (int)(yc + (x - xc) * Math.Sin(alpha) + (y - yc) * Math.Cos(alpha));
 
                 return (x, y);
-            };
+            });
+
+            if (alpha == 0)
+            {
+                _imageTransformations.Remove(ROTATING_KEY);
+            }
+            else
+            {
+                _imageTransformations[ROTATING_KEY] = (x, y) =>
+                {
+                    int xc = Width;
+                    int yc = Height;
+
+                    //x = x - xc;
+                    //y = y - yc;
+
+                    x = (int)(/*xc + (x - xc)*/x * Math.Cos(alpha) - /*(y - yc)*/y * Math.Sin(alpha));
+                    y = (int)(/*yc + (x - xc)*/x * Math.Sin(alpha) + /*(y - yc)*/y * Math.Cos(alpha));
+
+                    //x = x + xc;
+                    //y = y + yc;
+
+                    return (x, y);
+                };
+            }
+
             return this;
         }
 
         public Matrix Scale(int sx, int sy)
         {
-            _imageTransformations["ScalingOperation"] = (x, y) =>
+            if (Math.Abs(sx) == 1 && Math.Abs(sy) == 1)
             {
-                x = x * sx;
-                y = y * sy;
-                return (x, y);
-            };
+                _imageTransformations.Remove(SCALING_KEY);
+            }
+            else
+            {
+                _imageTransformations[SCALING_KEY] = (x, y) =>
+                {
+                    x = x * sx;
+                    y = y * sy;
+                    return (x, y);
+                };
+            }
+
             return this;
         }
 
         public Matrix Shear(int bx, int by)
         {
-            _imageTransformations["ShearingOperation"] = (x, y) =>
+            if (bx == 0 && by == 0)
             {
-                x = x + bx * y;
-                y = y + by * x;
+                _imageTransformations.Remove(SHEARING_KEY);
+            }
+            else
+            {
+                _imageTransformations[SHEARING_KEY] = (x, y) =>
+                {
+                    x = x + bx * y;
+                    y = y + by * x;
 
-                return (x, y);
-            };
+                    return (x, y);
+                };
+            }
+
             return this;
         }
 
@@ -211,6 +238,27 @@ namespace Image_Transformation
                 y = y + dy;
                 return (x, y);
             });
+        }
+
+        private static Matrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints)
+        {
+            int smallestX = transformedPoints.Select(point => point.Key.x).Min();
+            int smallestY = transformedPoints.Select(point => point.Key.y).Min();
+
+            int biggestX = transformedPoints.Select(point => point.Key.x).Max();
+            int biggestY = transformedPoints.Select(point => point.Key.y).Max();
+
+            int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
+            int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
+
+            Matrix transformedMatrix = new Matrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
+
+            foreach (var (x, y) in transformedPoints.Keys)
+            {
+                transformedMatrix[y + Math.Abs(smallestY), x + Math.Abs(smallestX)] = transformedPoints[(x, y)];
+            }
+
+            return transformedMatrix;
         }
 
         private int ConvertIndexToX(int index, int width)

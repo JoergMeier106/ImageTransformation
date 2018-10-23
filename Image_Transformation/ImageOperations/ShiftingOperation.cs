@@ -17,7 +17,6 @@
         public int LayerCount => _imageLoader.LayerCount;
         public bool MatrixChanged { get; private set; }
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
-        public bool TransformationAdded => _imageLoader.TransformationAdded;
 
         public Matrix GetImageMatrix()
         {

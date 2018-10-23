@@ -16,7 +16,6 @@
         public bool MatrixChanged { get; private set; }
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
         public bool UseCustomBrightness { get; set; }
-        public bool TransformationAdded => _imageLoader.TransformationAdded;
 
         public Matrix GetImageMatrix()
         {
@@ -36,7 +35,7 @@
 
         private void AdjustBrightness(Matrix sourceMatrix, double brightnessFactor)
         {
-            if (_lastBrightnessFactor != BrightnessFactor || _imageLoader.MatrixChanged)
+            if (_lastBrightnessFactor != brightnessFactor || _imageLoader.MatrixChanged)
             {
                 MatrixChanged = true;
                 _lastBrightnessFactor = brightnessFactor;

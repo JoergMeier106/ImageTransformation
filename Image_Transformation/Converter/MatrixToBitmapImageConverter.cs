@@ -19,11 +19,7 @@ namespace Image_Transformation
         public BitmapSource GetImage()
         {
             Matrix imageMatrix = _imageOperation.GetImageMatrix();
-            
-            if (_imageOperation.TransformationAdded)
-            {
-                imageMatrix = imageMatrix.ExecuteTransformations();
-            }
+            imageMatrix = imageMatrix.ExecuteTransformations();
 
             Height = imageMatrix.Height;
             Width = imageMatrix.Width;
