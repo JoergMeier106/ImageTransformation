@@ -150,7 +150,7 @@ namespace Image_Transformation
 
         public Matrix Rotate(double alpha)
         {
-            return Transform(this, new Matrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
+            Matrix rotatedMatrix = Transform(this, new Matrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
             {
                 int xc = Width / 2;
                 int yc = Height / 2;
@@ -160,6 +160,8 @@ namespace Image_Transformation
 
                 return (x, y);
             });
+            rotatedMatrix._imageTransformations = _imageTransformations;
+            return rotatedMatrix;
 
             if (alpha == 0)
             {

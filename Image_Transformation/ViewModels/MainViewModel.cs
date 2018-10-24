@@ -304,7 +304,7 @@ namespace Image_Transformation.ViewModels
             Image = bitmapCreator.GetImage();
             ImageHeight = (int)Image.Height;
             ImageWidth = (int)Image.Width;
-            LayerCount = bitmapCreator.LayerCount;
+            LayerCount = bitmapCreator.LayerCount - 1;
             LayerSliderEnabled = LayerCount > 1;
             SliderEnabled = true;
         }

@@ -31,7 +31,7 @@ namespace Image_Transformation
 
                 byte[] rawBytes = File.ReadAllBytes(Path);
                 _imageBytes = GetLayerBytes(rawBytes, Layer);
-                LayerCount = rawBytes.Length / (Width * Height * 2) - 1;
+                LayerCount = rawBytes.Length / (Width * Height * 2);
             }
             return new Matrix(Height, Width, _imageBytes);
         }
