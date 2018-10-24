@@ -29,7 +29,8 @@ namespace Image_Transformation
             int bitsPerPixel = 16;
             int stride = (Width * bitsPerPixel + 7) / 8;
 
-            return BitmapSource.Create(Width, Height, 96, 96, PixelFormats.Gray16, null, imageBytes, stride);
+            PixelFormat pixelFormat = imageMatrix.BytePerPixel == 2 ? PixelFormats.Gray16 : PixelFormats.Gray8;
+            return BitmapSource.Create(Width, Height, 96, 96, pixelFormat, null, imageBytes, stride);
         }
     }
 }

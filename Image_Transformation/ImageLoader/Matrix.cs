@@ -6,10 +6,9 @@ namespace Image_Transformation
 {
     public class Matrix
     {
-        private const string SHEARING_KEY = "ShearingOperation";
-        private const string SCALING_KEY = "ScalingOperation";
         private const string ROTATING_KEY = "RotationOperation";
-
+        private const string SCALING_KEY = "ScalingOperation";
+        private const string SHEARING_KEY = "ShearingOperation";
         private readonly ushort[,] _matrix;
         private Dictionary<string, Func<int, int, (int x, int y)>> _imageTransformations;
 
@@ -19,12 +18,25 @@ namespace Image_Transformation
             Width = width;
             _matrix = new ushort[Height, Width];
             _imageTransformations = new Dictionary<string, Func<int, int, (int x, int y)>>();
+            BytePerPixel = bytes.Length / (Height * Width);
 
             CreateMatrix(bytes);
         }
 
+        public Matrix(int height, int width, int bytePerPixel)
+        {
+            Height = height;
+            Width = width;
+            _matrix = new ushort[Height, Width];
+            BytePerPixel = bytePerPixel;
+            _imageTransformations = new Dictionary<string, Func<int, int, (int x, int y)>>();
+        }
+
         public int Height { get; }
+
         public int Width { get; }
+
+        public int BytePerPixel { get; private set; }
 
         public ushort this[int y, int x]
         {
@@ -67,6 +79,11 @@ namespace Image_Transformation
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
             return matrix;
         }
+
+        //public static Matrix operator * (Matrix leftMatrix, double rightMatrix)
+        //{
+        //    Matrix matrix = new
+        //}
 
         public static Matrix operator +(Matrix matrix, double value)
         {
@@ -134,15 +151,23 @@ namespace Image_Transformation
 
         public byte[] GetBytes()
         {
-            byte[] bytes = new byte[Height * Width * 2];
+            byte[] bytes = new byte[Height * Width * BytePerPixel];
             for (int row = 0; row < Height; row++)
             {
                 for (int column = 0; column < Width; column++)
                 {
-                    int targetIndex = ConvertXYToIndex(column * 2, row, Width * 2);
-                    byte[] targetBytes = BitConverter.GetBytes(_matrix[row, column]);
+                    int targetIndex = ConvertXYToIndex(column * BytePerPixel, row, Width * BytePerPixel);
+                    byte[] targetBytes = BitConverter.GetBytes(_matrix[row, column]);                    
+                    
+                    if (BytePerPixel == 2)
+                    {
+                        bytes[targetIndex + 1] = targetBytes[1];
+                    }
+                    else if (targetBytes[1] > 0)
+                    {
+                        targetBytes[0] = byte.MaxValue;
+                    }
                     bytes[targetIndex] = targetBytes[0];
-                    bytes[targetIndex + 1] = targetBytes[1];
                 }
             }
             return bytes;
@@ -162,32 +187,6 @@ namespace Image_Transformation
             });
             rotatedMatrix._imageTransformations = _imageTransformations;
             return rotatedMatrix;
-
-            if (alpha == 0)
-            {
-                _imageTransformations.Remove(ROTATING_KEY);
-            }
-            else
-            {
-                _imageTransformations[ROTATING_KEY] = (x, y) =>
-                {
-                    int xc = Width;
-                    int yc = Height;
-
-                    //x = x - xc;
-                    //y = y - yc;
-
-                    x = (int)(/*xc + (x - xc)*/x * Math.Cos(alpha) - /*(y - yc)*/y * Math.Sin(alpha));
-                    y = (int)(/*yc + (x - xc)*/x * Math.Sin(alpha) + /*(y - yc)*/y * Math.Cos(alpha));
-
-                    //x = x + xc;
-                    //y = y + yc;
-
-                    return (x, y);
-                };
-            }
-
-            return this;
         }
 
         public Matrix Scale(int sx, int sy)
@@ -280,10 +279,10 @@ namespace Image_Transformation
 
         private void CreateMatrix(byte[] bytes)
         {
-            for (int i = 0; i < bytes.Length; i += 2)
+            for (int i = 0; i < bytes.Length; i += BytePerPixel)
             {
-                int x = ConvertIndexToX(i / 2, Width);
-                int y = ConvertIndexToY(i, Width * 2);
+                int x = ConvertIndexToX(i / BytePerPixel, Width);
+                int y = ConvertIndexToY(i, Width * BytePerPixel);
 
                 _matrix[y, x] = BitConverter.ToUInt16(bytes, i);
             }
