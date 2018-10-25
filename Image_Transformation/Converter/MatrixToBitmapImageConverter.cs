@@ -19,7 +19,6 @@ namespace Image_Transformation
         public BitmapSource GetImage()
         {
             ImageMatrix imageMatrix = _imageOperation.GetImageMatrix();
-            imageMatrix = imageMatrix.ExecuteTransformations();
 
             TransformationMatrix transformationMatrix = _imageOperation.GetTransformationMatrix();
             if (transformationMatrix != TransformationMatrix.UnitMatrix)

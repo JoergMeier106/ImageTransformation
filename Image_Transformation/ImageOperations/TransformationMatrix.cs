@@ -47,9 +47,9 @@ namespace Image_Transformation
         {
             TransformationMatrix shiftToOriginMatrix = new TransformationMatrix(new double[,]
             {
-                { 1, 0,  xc  },
+                { 1, 0,  xc },
                 { 0, 1,  yc },
-                { 0, 0,  1          },
+                { 0, 0,  1  },
             });
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
@@ -61,7 +61,7 @@ namespace Image_Transformation
             {
                 { 1, 0,  -xc },
                 { 0, 1,  -yc },
-                { 0, 0,  1             },
+                { 0, 0,  1   }
             });
             return shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
         }

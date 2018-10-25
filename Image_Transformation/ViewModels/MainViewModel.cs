@@ -1,8 +1,12 @@
 ﻿using Microsoft.Win32;
+using System;
 using System.ComponentModel;
 using System.IO;
+using System.Runtime.InteropServices;
+using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace Image_Transformation.ViewModels
 {
@@ -158,6 +162,55 @@ namespace Image_Transformation.ViewModels
                     }
                     _imageOpen = true;
                 });
+            }
+        }
+
+        public ICommand SaveImage
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    OpenFileDialog saveFileDialog = new OpenFileDialog
+                    {
+                        Filter = " PNG (*.png)|*.png",
+                        CheckFileExists = false
+                    };
+
+                    if (saveFileDialog.ShowDialog() == true)
+                    {
+                        using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
+                        {
+                            BitmapEncoder encoder = new PngBitmapEncoder();
+                            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)Image));
+                            encoder.Save(fileStream);
+                        }
+                    }
+                });
+            }
+        }
+
+        public static System.Drawing.Bitmap BitmapSourceToBitmap2(BitmapSource srs)
+        {
+            int width = srs.PixelWidth;
+            int height = srs.PixelHeight;
+            int stride = width * ((srs.Format.BitsPerPixel + 7) / 8);
+            IntPtr ptr = IntPtr.Zero;
+            try
+            {
+                ptr = Marshal.AllocHGlobal(height * stride);
+                srs.CopyPixels(new Int32Rect(0, 0, width, height), ptr, height * stride, stride);
+                using (var btm = new System.Drawing.Bitmap(width, height, stride, System.Drawing.Imaging.PixelFormat.Format1bppIndexed, ptr))
+                {
+                    // Clone the bitmap so that we can dispose it and
+                    // release the unmanaged memory at ptr
+                    return new System.Drawing.Bitmap(btm);
+                }
+            }
+            finally
+            {
+                if (ptr != IntPtr.Zero)
+                    Marshal.FreeHGlobal(ptr);
             }
         }
 
