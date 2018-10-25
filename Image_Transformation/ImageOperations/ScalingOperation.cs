@@ -15,10 +15,16 @@
         public int Sx { get; set; }
         public int Sy { get; set; }
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
-            Matrix imageMatrix = _imageLoader.GetImageMatrix();
-            return imageMatrix.Scale(Sx, Sy);
+            return _imageLoader.GetImageMatrix();
+        }
+
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            TransformationMatrix transformationMatrix = _imageLoader.GetTransformationMatrix();
+            TransformationMatrix scalingMatrix = TransformationMatrix.GetScalingMatrix(Sx, Sy);
+            return transformationMatrix * scalingMatrix;
         }
     }
 }

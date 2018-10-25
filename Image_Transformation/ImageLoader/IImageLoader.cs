@@ -6,6 +6,8 @@
         bool MatrixChanged { get; }
         double MetaFileBrightnessFactor { get; }
 
-        Matrix GetImageMatrix();
+        ImageMatrix GetImageMatrix();
+
+        TransformationMatrix GetTransformationMatrix();
     }
 }

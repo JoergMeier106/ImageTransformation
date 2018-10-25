@@ -14,10 +14,20 @@
         public bool MatrixChanged => _imageLoader.MatrixChanged;
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
-            Matrix imageMatrix = _imageLoader.GetImageMatrix();
-            return imageMatrix.Rotate(Alpha);
+            return _imageLoader.GetImageMatrix();
+        }
+
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            ImageMatrix imageMatrix = GetImageMatrix();
+            int height = imageMatrix.Height;
+            int width = imageMatrix.Width;
+
+            TransformationMatrix transformationMatrix = _imageLoader.GetTransformationMatrix();
+            TransformationMatrix rotationMatrix = TransformationMatrix.GetRotationMatrix(Alpha, width / 2, height / 2);
+            return transformationMatrix * rotationMatrix;
         }
     }
 }

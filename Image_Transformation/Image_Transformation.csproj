@@ -73,7 +73,7 @@
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
     <Compile Include="ImageLoader\BitmapCreatorBuilder.cs" />
     <Compile Include="ImageLoader\JsonParser.cs" />
-    <Compile Include="ImageLoader\Matrix.cs" />
+    <Compile Include="ImageLoader\ImageMatrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
     <Compile Include="ImageLoader\ImageMetaInformation.cs" />
     <Compile Include="ImageOperations\AdjustBrightnessOperation.cs" />
@@ -82,6 +82,7 @@
     <Compile Include="ImageOperations\ScalingOperation.cs" />
     <Compile Include="ImageOperations\ShearingOperation.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />
+    <Compile Include="ImageOperations\TransformationMatrix.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="Views\MainView.xaml.cs">

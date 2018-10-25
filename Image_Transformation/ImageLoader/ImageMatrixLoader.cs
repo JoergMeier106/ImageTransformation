@@ -16,9 +16,8 @@ namespace Image_Transformation
         public double MetaFileBrightnessFactor { get; private set; }
         public string Path { get; set; }
         public int Width { get; private set; }
-        public bool TransformationAdded => false;
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
             MatrixChanged = false;
             if (_lastPath != Path || _lastLayer != Layer)
@@ -33,7 +32,12 @@ namespace Image_Transformation
                 _imageBytes = GetLayerBytes(rawBytes, Layer);
                 LayerCount = rawBytes.Length / (Width * Height * 2);
             }
-            return new Matrix(Height, Width, _imageBytes);
+            return new ImageMatrix(Height, Width, _imageBytes);
+        }
+
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            return TransformationMatrix.UnitMatrix;
         }
 
         private byte[] GetLayerBytes(byte[] rawBytes, int layer)

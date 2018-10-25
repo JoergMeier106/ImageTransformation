@@ -15,10 +15,16 @@
         public bool MatrixChanged => _imageLoader.MatrixChanged;
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
-            Matrix imageMatrix = _imageLoader.GetImageMatrix();
-            return imageMatrix.Shear(Bx, By);
+            return _imageLoader.GetImageMatrix();
+        }
+
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            TransformationMatrix transformationMatrix = _imageLoader.GetTransformationMatrix();
+            TransformationMatrix shearingMatrix = TransformationMatrix.GetShearingMatrix(Bx, By);
+            return transformationMatrix * shearingMatrix;
         }
     }
 }

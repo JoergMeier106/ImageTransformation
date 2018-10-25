@@ -18,15 +18,21 @@ namespace Image_Transformation
 
         public BitmapSource GetImage()
         {
-            Matrix imageMatrix = _imageOperation.GetImageMatrix();
+            ImageMatrix imageMatrix = _imageOperation.GetImageMatrix();
             imageMatrix = imageMatrix.ExecuteTransformations();
+
+            TransformationMatrix transformationMatrix = _imageOperation.GetTransformationMatrix();
+            if (transformationMatrix != TransformationMatrix.UnitMatrix)
+            {
+                imageMatrix = ImageMatrix.Transform(imageMatrix, transformationMatrix);
+            }
 
             Height = imageMatrix.Height;
             Width = imageMatrix.Width;
 
             byte[] imageBytes = imageMatrix.GetBytes();
 
-            int bitsPerPixel = 16;
+            int bitsPerPixel = 8 * imageMatrix.BytePerPixel;
             int stride = (Width * bitsPerPixel + 7) / 8;
 
             PixelFormat pixelFormat = imageMatrix.BytePerPixel == 2 ? PixelFormats.Gray16 : PixelFormats.Gray8;

@@ -3,7 +3,7 @@
     public class ShiftingOperation : IImageOperation
     {
         private readonly IImageLoader _imageLoader;
-        private Matrix _cashedMatrix;
+        private ImageMatrix _cashedMatrix;
         private int _lastDx;
         private int _lastDy;
 
@@ -18,10 +18,10 @@
         public bool MatrixChanged { get; private set; }
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
             MatrixChanged = false;
-            Matrix sourceMatrix = _imageLoader.GetImageMatrix();
+            ImageMatrix sourceMatrix = _imageLoader.GetImageMatrix();
 
             if (OperationShouldBeExecuted())
             {
@@ -31,7 +31,8 @@
                     _lastDx = Dx;
                     _lastDy = Dy;
 
-                    _cashedMatrix = sourceMatrix.Shift(Dx, Dy);
+                    TransformationMatrix shiftingMatrix = TransformationMatrix.GetShiftingMatrix(Dx, Dy);
+                    _cashedMatrix = ImageMatrix.Transform(sourceMatrix, new ImageMatrix(sourceMatrix.Height, sourceMatrix.Width, 2), shiftingMatrix);
                 }
 
                 return _cashedMatrix;
@@ -43,6 +44,11 @@
                 _lastDy = Dy;
                 return sourceMatrix;
             }
+        }
+
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            return _imageLoader.GetTransformationMatrix();
         }
 
         private bool MatrixMustBeUpdated()

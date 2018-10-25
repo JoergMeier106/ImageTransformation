@@ -3,7 +3,7 @@
     public class AdjustBrightnessOperation : IImageOperation
     {
         private readonly IImageLoader _imageLoader;
-        private Matrix _cashedMatrix;
+        private ImageMatrix _cashedMatrix;
         private double _lastBrightnessFactor;
 
         public AdjustBrightnessOperation(IImageLoader imageLoader)
@@ -17,10 +17,10 @@
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
         public bool UseCustomBrightness { get; set; }
 
-        public Matrix GetImageMatrix()
+        public ImageMatrix GetImageMatrix()
         {
             MatrixChanged = false;
-            Matrix sourceMatrix = _imageLoader.GetImageMatrix();
+            ImageMatrix sourceMatrix = _imageLoader.GetImageMatrix();
             if (UseCustomBrightness)
             {
                 AdjustBrightness(sourceMatrix, BrightnessFactor);
@@ -33,7 +33,12 @@
             return _cashedMatrix;
         }
 
-        private void AdjustBrightness(Matrix sourceMatrix, double brightnessFactor)
+        public TransformationMatrix GetTransformationMatrix()
+        {
+            return _imageLoader.GetTransformationMatrix();
+        }
+
+        private void AdjustBrightness(ImageMatrix sourceMatrix, double brightnessFactor)
         {
             if (_lastBrightnessFactor != brightnessFactor || _imageLoader.MatrixChanged)
             {

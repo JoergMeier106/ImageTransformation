@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Image_Transformation
 {
-    public class Matrix
+    public class ImageMatrix
     {
         private const string ROTATING_KEY = "RotationOperation";
         private const string SCALING_KEY = "ScalingOperation";
@@ -12,7 +12,7 @@ namespace Image_Transformation
         private readonly ushort[,] _matrix;
         private Dictionary<string, Func<int, int, (int x, int y)>> _imageTransformations;
 
-        public Matrix(int height, int width, byte[] bytes)
+        public ImageMatrix(int height, int width, byte[] bytes)
         {
             Height = height;
             Width = width;
@@ -23,7 +23,7 @@ namespace Image_Transformation
             CreateMatrix(bytes);
         }
 
-        public Matrix(int height, int width, int bytePerPixel)
+        public ImageMatrix(int height, int width, int bytePerPixel)
         {
             Height = height;
             Width = width;
@@ -32,11 +32,10 @@ namespace Image_Transformation
             _imageTransformations = new Dictionary<string, Func<int, int, (int x, int y)>>();
         }
 
+        public int BytePerPixel { get; private set; }
         public int Height { get; }
 
         public int Width { get; }
-
-        public int BytePerPixel { get; private set; }
 
         public ushort this[int y, int x]
         {
@@ -44,7 +43,7 @@ namespace Image_Transformation
             set { _matrix[y, x] = value; }
         }
 
-        public static Matrix Map(Matrix sourceMatrix, Matrix targetMatrix, Func<ushort, ushort> action)
+        public static ImageMatrix Map(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<ushort, ushort> action)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -56,7 +55,7 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static Matrix Map(Matrix sourceMatrix, Matrix targetMatrix, Func<int, int, ushort> action)
+        public static ImageMatrix Map(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, ushort> action)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -68,24 +67,19 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static Matrix operator *(Matrix matrix, double value)
+        public static ImageMatrix operator *(ImageMatrix matrix, double value)
         {
             Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
             return matrix;
         }
 
-        public static Matrix operator /(Matrix matrix, double value)
+        public static ImageMatrix operator /(ImageMatrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
             return matrix;
         }
 
-        //public static Matrix operator * (Matrix leftMatrix, double rightMatrix)
-        //{
-        //    Matrix matrix = new
-        //}
-
-        public static Matrix operator +(Matrix matrix, double value)
+        public static ImageMatrix operator +(ImageMatrix matrix, double value)
         {
             Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
             return matrix;
@@ -96,7 +90,7 @@ namespace Image_Transformation
             return y >= 0 && y < height && x >= 0 && x < width;
         }
 
-        public static Matrix Transform(Matrix sourceMatrix, Func<int, int, (int x, int y)> transformFunction)
+        public static ImageMatrix Transform(ImageMatrix sourceMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
             Dictionary<(int x, int y), ushort> transformedPoints = new Dictionary<(int x, int y), ushort>();
 
@@ -114,7 +108,27 @@ namespace Image_Transformation
             return CreateNewSizedMatrix(transformedPoints);
         }
 
-        public static Matrix Transform(Matrix sourceMatrix, Matrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
+        public static ImageMatrix Transform(ImageMatrix sourceMatrix, TransformationMatrix transformationMatrix)
+        {
+            return Transform(sourceMatrix, (x, y) =>
+            {
+                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+            });
+        }
+
+        public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix imageMatrix, TransformationMatrix transformationMatrix)
+        {
+            return Transform(sourceMatrix, imageMatrix, (x, y) =>
+            {
+                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+            });
+        }
+
+        public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -132,7 +146,7 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public Matrix ExecuteTransformations()
+        public ImageMatrix ExecuteTransformations()
         {
             if (_imageTransformations.Count > 0)
             {
@@ -157,8 +171,8 @@ namespace Image_Transformation
                 for (int column = 0; column < Width; column++)
                 {
                     int targetIndex = ConvertXYToIndex(column * BytePerPixel, row, Width * BytePerPixel);
-                    byte[] targetBytes = BitConverter.GetBytes(_matrix[row, column]);                    
-                    
+                    byte[] targetBytes = BitConverter.GetBytes(_matrix[row, column]);
+
                     if (BytePerPixel == 2)
                     {
                         bytes[targetIndex + 1] = targetBytes[1];
@@ -173,9 +187,9 @@ namespace Image_Transformation
             return bytes;
         }
 
-        public Matrix Rotate(double alpha)
+        public ImageMatrix Rotate(double alpha)
         {
-            Matrix rotatedMatrix = Transform(this, new Matrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
+            ImageMatrix rotatedMatrix = Transform(this, new ImageMatrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
             {
                 int xc = Width / 2;
                 int yc = Height / 2;
@@ -189,7 +203,7 @@ namespace Image_Transformation
             return rotatedMatrix;
         }
 
-        public Matrix Scale(int sx, int sy)
+        public ImageMatrix Scale(int sx, int sy)
         {
             if (Math.Abs(sx) == 1 && Math.Abs(sy) == 1)
             {
@@ -208,7 +222,7 @@ namespace Image_Transformation
             return this;
         }
 
-        public Matrix Shear(int bx, int by)
+        public ImageMatrix Shear(int bx, int by)
         {
             if (bx == 0 && by == 0)
             {
@@ -228,9 +242,9 @@ namespace Image_Transformation
             return this;
         }
 
-        public Matrix Shift(int dx, int dy)
+        public ImageMatrix Shift(int dx, int dy)
         {
-            Matrix shiftedMatrix = new Matrix(Height, Width, new byte[Height * Width * 2]);
+            ImageMatrix shiftedMatrix = new ImageMatrix(Height, Width, new byte[Height * Width * 2]);
             shiftedMatrix._imageTransformations = _imageTransformations;
 
             return Transform(this, shiftedMatrix, (x, y) =>
@@ -241,7 +255,17 @@ namespace Image_Transformation
             });
         }
 
-        private static Matrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints)
+        private static TransformationMatrix ConvertToHomogeneousMatrix(int x, int y)
+        {
+            return new TransformationMatrix(new double[,]
+            {
+                    { x },
+                    { y },
+                    { 1 }
+            });
+        }
+
+        private static ImageMatrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints)
         {
             int smallestX = transformedPoints.Select(point => point.Key.x).Min();
             int smallestY = transformedPoints.Select(point => point.Key.y).Min();
@@ -252,7 +276,7 @@ namespace Image_Transformation
             int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
             int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
 
-            Matrix transformedMatrix = new Matrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
+            ImageMatrix transformedMatrix = new ImageMatrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
 
             foreach (var (x, y) in transformedPoints.Keys)
             {
