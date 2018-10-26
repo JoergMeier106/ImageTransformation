@@ -16,18 +16,20 @@ namespace Image_Transformation
         int Sx { get; }
         int Sy { get; }
 
-        BitmapSource GetBitmap();
+        BitmapSource Build();
 
-        void Rotate(double alpha);
+        IBitmapBuilder Rotate(double alpha);
 
-        void Scale(int sx, int sy);
+        IBitmapBuilder Scale(int sx, int sy);
 
-        void SetBrightness(double brightness);
+        IBitmapBuilder SetBrightness(double brightness);
 
-        void SetLayer(int layer);
+        IBitmapBuilder SetLayer(int layer);
 
-        void Shear(int bx, int by);
+        IBitmapBuilder SetPath(string path);
 
-        void Shift(int dx, int dy);
+        IBitmapBuilder Shear(int bx, int by);
+
+        IBitmapBuilder Shift(int dx, int dy);
     }
 }

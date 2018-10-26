@@ -66,21 +66,17 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Converter\IBitmapCreator.cs" />
     <Compile Include="Converter\ToNegativeConverter.cs" />
     <Compile Include="ImageLoader\IImageLoader.cs" />
-    <Compile Include="ImageLoader\IBitmapCreatorBuilder.cs" />
+    <Compile Include="ImageLoader\IBitmapBuilder.cs" />
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
-    <Compile Include="ImageLoader\BitmapCreatorBuilder.cs" />
+    <Compile Include="ImageLoader\BitmapBuilder.cs" />
     <Compile Include="ImageLoader\JsonParser.cs" />
     <Compile Include="ImageLoader\ImageMatrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
     <Compile Include="ImageLoader\ImageMetaInformation.cs" />
     <Compile Include="ImageOperations\AdjustBrightnessOperation.cs" />
     <Compile Include="ImageOperations\IImageOperation.cs" />
-    <Compile Include="ImageOperations\RotationOperation.cs" />
-    <Compile Include="ImageOperations\ScalingOperation.cs" />
-    <Compile Include="ImageOperations\ShearingOperation.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />
     <Compile Include="ImageOperations\TransformationMatrix.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />

@@ -12,11 +12,10 @@ namespace Image_Transformation.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly IBitmapCreatorBuilder _bitmapCreatorBuilder;
+        private readonly IBitmapBuilder _bitmapBuilder;
         private string _fileFormat;
         private ImageSource _image;
         private int _imageHeight;
-        private bool _imageOpen;
         private int _imageWidth;
         private int _layerCount;
         private bool _layerSliderEnabled;
@@ -26,11 +25,11 @@ namespace Image_Transformation.ViewModels
         private int _shearBy;
         private int _shiftDx;
         private int _shiftDy;
-        private bool _sliderEnabled;
+        private bool _imageIsOpen;
 
-        public MainViewModel(IBitmapCreatorBuilder bitmapCreatorBuilder)
+        public MainViewModel(IBitmapBuilder bitmapCreatorBuilder)
         {
-            _bitmapCreatorBuilder = bitmapCreatorBuilder;
+            _bitmapBuilder = bitmapCreatorBuilder;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -39,11 +38,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _bitmapCreatorBuilder.Brightness;
+                return _bitmapBuilder.Brightness;
             }
             set
             {
-                _bitmapCreatorBuilder.SetBrightness(value);
+                _bitmapBuilder.SetBrightness(value);
                 UpdateImage();
                 RaisePropertyChanged(nameof(Brightness));
             }
@@ -53,11 +52,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _bitmapCreatorBuilder.Layer;
+                return _bitmapBuilder.Layer;
             }
             set
             {
-                _bitmapCreatorBuilder.SetLayer(value);
+                _bitmapBuilder.SetLayer(value);
                 UpdateImage();
                 RaisePropertyChanged(nameof(CurrentLayer));
             }
@@ -147,7 +146,7 @@ namespace Image_Transformation.ViewModels
             {
                 return new RelayCommand((args) =>
                 {
-                    _imageOpen = false;
+                    ImageIsOpen = false;
                     OpenFileDialog openFileDialog = new OpenFileDialog
                     {
                         Filter = " RAW Files (*.raw)|*.raw"
@@ -157,10 +156,10 @@ namespace Image_Transformation.ViewModels
                     {
                         Resetvalues();
 
-                        _bitmapCreatorBuilder.SetPath(openFileDialog.FileName);
+                        _bitmapBuilder.SetPath(openFileDialog.FileName);
                         ShowImage();
                     }
-                    _imageOpen = true;
+                    ImageIsOpen = true;
                 });
             }
         }
@@ -218,11 +217,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _bitmapCreatorBuilder.Alpha;
+                return _bitmapBuilder.Alpha;
             }
             set
             {
-                _bitmapCreatorBuilder.Rotate(value);
+                _bitmapBuilder.Rotate(value);
                 UpdateImage();
                 RaisePropertyChanged(nameof(RotationAlpha));
             }
@@ -237,7 +236,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _scaleSx = value;
-                _bitmapCreatorBuilder.Scale(_scaleSx, _scaleSy);
+                _bitmapBuilder.Scale(_scaleSx, _scaleSy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ScaleSx));
             }
@@ -252,7 +251,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _scaleSy = value;
-                _bitmapCreatorBuilder.Scale(_scaleSx, _scaleSy);
+                _bitmapBuilder.Scale(_scaleSx, _scaleSy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ScaleSy));
             }
@@ -267,7 +266,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _shearBx = value;
-                _bitmapCreatorBuilder.Shear(_shearBx, _shearBy);
+                _bitmapBuilder.Shear(_shearBx, _shearBy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ShearBx));
             }
@@ -282,7 +281,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _shearBy = value;
-                _bitmapCreatorBuilder.Shear(_shearBx, _shearBy);
+                _bitmapBuilder.Shear(_shearBx, _shearBy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ShearBy));
             }
@@ -297,7 +296,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _shiftDx = value;
-                _bitmapCreatorBuilder.Shift(_shiftDx, _shiftDy);
+                _bitmapBuilder.Shift(_shiftDx, _shiftDy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ShiftDx));
             }
@@ -312,22 +311,22 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _shiftDy = value;
-                _bitmapCreatorBuilder.Shift(_shiftDx, _shiftDy);
+                _bitmapBuilder.Shift(_shiftDx, _shiftDy);
                 UpdateImage();
                 RaisePropertyChanged(nameof(ShiftDy));
             }
         }
 
-        public bool SliderEnabled
+        public bool ImageIsOpen
         {
             get
             {
-                return _sliderEnabled;
+                return _imageIsOpen;
             }
             set
             {
-                _sliderEnabled = value;
-                RaisePropertyChanged(nameof(SliderEnabled));
+                _imageIsOpen = value;
+                RaisePropertyChanged(nameof(ImageIsOpen));
             }
         }
 
@@ -351,20 +350,18 @@ namespace Image_Transformation.ViewModels
 
         private void ShowImage()
         {
-            FileFormat = Path.GetExtension(_bitmapCreatorBuilder.Path);
-
-            var bitmapCreator = _bitmapCreatorBuilder.Build();
-            Image = bitmapCreator.GetImage();
+            FileFormat = Path.GetExtension(_bitmapBuilder.Path);
+            
+            Image = _bitmapBuilder.Build();
             ImageHeight = (int)Image.Height;
             ImageWidth = (int)Image.Width;
-            LayerCount = bitmapCreator.LayerCount - 1;
+            LayerCount = _bitmapBuilder.LayerCount - 1;
             LayerSliderEnabled = LayerCount > 1;
-            SliderEnabled = true;
         }
 
         private void UpdateImage()
         {
-            if (_imageOpen)
+            if (ImageIsOpen)
             {
                 ShowImage();
             }

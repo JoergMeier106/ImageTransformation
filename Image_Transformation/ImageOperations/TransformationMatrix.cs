@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Image_Transformation
 {
-    public sealed class TransformationMatrix
+    public struct TransformationMatrix
     {
         public static readonly TransformationMatrix UnitMatrix = new TransformationMatrix(new double[,]
         {
@@ -12,7 +12,7 @@ namespace Image_Transformation
             { 0, 0, 1 },
         });
 
-        private readonly double[,] _matrix;
+        private double[,] _matrix;
 
         public TransformationMatrix(double[,] matrix)
         {
@@ -25,11 +25,10 @@ namespace Image_Transformation
         {
             Height = height;
             Width = width;
-            _matrix = new double[Height, Width];
+            _matrix = new double[height, width];
         }
 
-        public int Height { get; }
-
+        public int Height { get; }   
         public int Width { get; }
 
         public double this[int y, int x]
@@ -41,59 +40,6 @@ namespace Image_Transformation
         public static bool operator !=(TransformationMatrix matrix1, TransformationMatrix matrix2)
         {
             return !(matrix1 == matrix2);
-        }
-
-        public static TransformationMatrix GetRotationMatrix(double alpha, int xc, int yc)
-        {
-            TransformationMatrix shiftToOriginMatrix = new TransformationMatrix(new double[,]
-            {
-                { 1, 0,  xc },
-                { 0, 1,  yc },
-                { 0, 0,  1  },
-            });
-            TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
-            {
-                { Math.Cos(alpha), -Math.Sin(alpha),  0 },
-                { Math.Sin(alpha),  Math.Cos(alpha),  0 },
-                { 0,                0,                1 }
-            });
-            TransformationMatrix shiftBackMatrix = new TransformationMatrix(new double[,]
-            {
-                { 1, 0,  -xc },
-                { 0, 1,  -yc },
-                { 0, 0,  1   }
-            });
-            return shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
-        }
-
-        public static TransformationMatrix GetScalingMatrix(int sx, int sy)
-        {
-            return new TransformationMatrix(new double[,]
-            {
-                { sx, 0,  0 },
-                { 0,  sy, 0 },
-                { 0,  0,  1 }
-            });
-        }
-
-        public static TransformationMatrix GetShearingMatrix(int bx, int by)
-        {
-            return new TransformationMatrix(new double[,]
-            {
-                { 1,  bx, 0 },
-                { by, 1,  0 },
-                { 0,  0,  1 }
-            });
-        }
-
-        public static TransformationMatrix GetShiftingMatrix(int dx, int dy)
-        {
-            return new TransformationMatrix(new double[,]
-            {
-                { 1, 0, dx },
-                { 0, 1, dy },
-                { 0, 0, 1  },
-            });
         }
 
         public static TransformationMatrix operator *(TransformationMatrix leftMatrix, TransformationMatrix rightMatrix)
@@ -127,9 +73,11 @@ namespace Image_Transformation
 
         public override bool Equals(object obj)
         {
-            var matrix = obj as TransformationMatrix;
-            return matrix != null &&
-                   MatrixContentIsEqual(matrix);
+            if (obj is TransformationMatrix matrix)
+            {
+                return MatrixContentIsEqual(matrix);
+            }
+            return false;
         }
 
         public override int GetHashCode()
@@ -139,6 +87,62 @@ namespace Image_Transformation
             hashCode = hashCode * -1521134295 + Height.GetHashCode();
             hashCode = hashCode * -1521134295 + Width.GetHashCode();
             return hashCode;
+        }
+
+        public TransformationMatrix Rotate(double alpha, int xc, int yc)
+        {
+            TransformationMatrix shiftToOriginMatrix = new TransformationMatrix(new double[,]
+            {
+                { 1, 0,  xc },
+                { 0, 1,  yc },
+                { 0, 0,  1  },
+            });
+            TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
+            {
+                { Math.Cos(alpha), -Math.Sin(alpha),  0 },
+                { Math.Sin(alpha),  Math.Cos(alpha),  0 },
+                { 0,                0,                1 }
+            });
+            TransformationMatrix shiftBackMatrix = new TransformationMatrix(new double[,]
+            {
+                { 1, 0,  -xc },
+                { 0, 1,  -yc },
+                { 0, 0,  1   }
+            });
+            return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
+        }
+
+        public TransformationMatrix Scale(int sx, int sy)
+        {
+            TransformationMatrix scalingMatrix = new TransformationMatrix(new double[,]
+            {
+                { sx, 0,  0 },
+                { 0,  sy, 0 },
+                { 0,  0,  1 }
+            });
+            return this * scalingMatrix;
+        }
+
+        public TransformationMatrix Shear(int bx, int by)
+        {
+            TransformationMatrix shearingMatrix = new TransformationMatrix(new double[,]
+            {
+                { 1,  bx, 0 },
+                { by, 1,  0 },
+                { 0,  0,  1 }
+            });
+            return this * shearingMatrix;
+        }
+
+        public TransformationMatrix Shift(int dx, int dy)
+        {
+            TransformationMatrix shiftingMatrix = new TransformationMatrix(new double[,]
+            {
+                { 1, 0, dx },
+                { 0, 1, dy },
+                { 0, 0, 1  },
+            });
+            return this * shiftingMatrix;
         }
 
         private bool MatrixContentIsEqual(TransformationMatrix matrix)

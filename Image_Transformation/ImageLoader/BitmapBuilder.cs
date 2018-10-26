@@ -1,156 +1,112 @@
-﻿using System;
-using System.IO;
-using System.Windows.Media;
+﻿using System.Collections.Generic;
 using System.Windows.Media.Imaging;
 
 namespace Image_Transformation
 {
     public class BitmapBuilder : IBitmapBuilder
     {
-        private Matrix _cashedMatrix;
-        private int _originalHeight;
-        private double _metaFileBrightnessFactor;
-        private int _originalWidth;
+        private readonly AdjustBrightnessOperation _brightnessOperation;
+        private readonly ImageMatrixLoader _imageMatrixLoader;
+        private readonly List<IImageOperation> _imageOperations;
+        private readonly ShiftingOperation _shiftingOperation;
+        private readonly IImageLoader _imageLoader;
 
-        public BitmapBuilder(string path)
+        public BitmapBuilder()
         {
-            Path = path ?? throw new ArgumentNullException(nameof(path));
-            ReadMetaInformation();
-            ReadBytesToMatrix();
+            _imageOperations = new List<IImageOperation>();
+            _imageMatrixLoader = new ImageMatrixLoader();
+            _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
+            _shiftingOperation = new ShiftingOperation(_brightnessOperation);
+
+            _imageLoader = _shiftingOperation;
         }
 
         public double Alpha { get; private set; }
-
-        public double Brightness { get; private set; }
-
+        public double Brightness => _brightnessOperation.BrightnessFactor;
         public int Bx { get; private set; }
-
         public int By { get; private set; }
-
-        public int Dx { get; private set; }
-
-        public int Dy { get; private set; }
-
-        public int Layer { get; private set; }
-
-        public int LayerCount { get; private set; }
-
-        public string Path { get; private set; }
-
+        public int Dx => _shiftingOperation.Dx;
+        public int Dy => _shiftingOperation.Dy;
+        public int Layer => _imageMatrixLoader.Layer;
+        public int LayerCount => _imageLoader.LayerCount;
+        public string Path => _imageMatrixLoader.Path;
         public int Sx { get; private set; }
-
         public int Sy { get; private set; }
 
-        public BitmapSource GetBitmap()
+        public IBitmapBuilder AddTransformation(IImageOperation transformation)
         {
-            int currentWidth = _cashedMatrix.Width;
-            int currentHeight = _cashedMatrix.Height;
-
-            byte[] imageBytes = _cashedMatrix.GetBytes();
-
-            int bitsPerPixel = 16;
-            int stride = (currentWidth * bitsPerPixel + 7) / 8;
-
-            return BitmapSource.Create(currentWidth, currentHeight, 96, 96, PixelFormats.Gray16, null, imageBytes, stride);
+            _imageOperations.Add(transformation);
+            return this;
         }
 
-        public void Rotate(double alpha)
+        public BitmapSource Build()
+        {
+            ImageMatrix imageMatrix = _imageLoader.GetImageMatrix();
+
+            TransformationMatrix transformationMatrix = TransformationMatrix.
+                UnitMatrix.
+                Shear(Bx, By).
+                Scale(Sx, Sy).
+                Rotate(Alpha, imageMatrix.Width / 2, imageMatrix.Height / 2);
+
+            if (transformationMatrix != TransformationMatrix.UnitMatrix)
+            {
+                imageMatrix = ImageMatrix.Transform(imageMatrix, transformationMatrix);
+            }
+
+            return MatrixToBitmapImageConverter.GetImage(imageMatrix);
+        }
+
+        public IBitmapBuilder ClearAllTransformation()
+        {
+            _imageOperations.Clear();
+            return this;
+        }
+
+        public IBitmapBuilder Rotate(double alpha)
         {
             Alpha = alpha;
-            _cashedMatrix = _cashedMatrix.Rotate(alpha);
+            return this;
         }
 
-        public void Scale(int sx, int sy)
+        public IBitmapBuilder Scale(int sx, int sy)
         {
             Sx = sx;
             Sy = sy;
-
-            _cashedMatrix = _cashedMatrix.Scale(sx, sy);
+            return this;
         }
 
-        public void SetBrightness(double brightness)
+        public IBitmapBuilder SetBrightness(double brightness)
         {
-            brightness = brightness == 0 ? _metaFileBrightnessFactor : brightness;
-            double brightnessFactor = brightness;
-
-            if (Brightness != 0 && Brightness != brightness)
-            {
-                brightnessFactor = brightness / Brightness;
-            }
-
-            Brightness = brightness;
-
-            _cashedMatrix = _cashedMatrix * brightnessFactor;
+            _brightnessOperation.BrightnessFactor = brightness;
+            _brightnessOperation.UseCustomBrightness = brightness > 0;
+            return this;
         }
 
-        public void SetLayer(int layer)
+        public IBitmapBuilder SetLayer(int layer)
         {
-            Layer = layer;
-
-            ReadBytesToMatrix();
+            _imageMatrixLoader.Layer = layer;
+            return this;
         }
 
-        public void Shear(int bx, int by)
+        public IBitmapBuilder SetPath(string path)
         {
-            if (bx != 0 || by != 0)
-            {
-                _cashedMatrix = Matrix.Transform(_cashedMatrix, (x, y) =>
-                {
-                    x = x - Bx * y;
-                    y = y - By * x;
-
-                    return (x, y);
-                });
-
-                _cashedMatrix = _cashedMatrix.Shear(bx, by);
-
-                Bx = bx;
-                By = by;
-                
-            }
+            _imageMatrixLoader.Path = path;
+            return this;
         }
 
-        public void Shift(int dx, int dy)
+        public IBitmapBuilder Shear(int bx, int by)
         {
-            if (dx != 0 || dy != 0)
-            {
-                _cashedMatrix = _cashedMatrix.Shift(dx - Dx, dy - Dy);
-
-                Dx = dx;
-                Dy = dy;
-            }
+            Bx = bx;
+            By = by;
+            return this;
         }
 
-        private byte[] GetLayerBytes(byte[] rawBytes, int layer)
+        public IBitmapBuilder Shift(int dx, int dy)
         {
-            int imageSize = _originalHeight * _originalWidth * 2;
-            int imagePosition = imageSize * layer;
-
-            byte[] targetRawBytes = new byte[imageSize];
-
-            Array.Copy(rawBytes, imagePosition, targetRawBytes, 0, imageSize);
-
-            return targetRawBytes;
-        }
-
-        private void ReadBytesToMatrix()
-        {
-            byte[] rawBytes = File.ReadAllBytes(Path);
-            byte[] imageBytes = GetLayerBytes(rawBytes, Layer);
-            LayerCount = rawBytes.Length / (_originalWidth * _originalHeight * 2) - 1;
-
-            _cashedMatrix = new Matrix(_originalHeight, _originalWidth, imageBytes);
-            SetBrightness(Brightness);
-        }
-
-        private void ReadMetaInformation()
-        {
-            string metaInformationPath = System.IO.Path.ChangeExtension(Path, ".json");
-            ImageMetaInformation metaInformation = JsonParser.Parse<ImageMetaInformation>(metaInformationPath);
-
-            _originalWidth = metaInformation.Width;
-            _originalHeight = metaInformation.Height;
-            _metaFileBrightnessFactor = metaInformation.BrightnessFactor;
+            _shiftingOperation.Dx = dx;
+            _shiftingOperation.Dy = dy;
+            return this;
         }
     }
 }
