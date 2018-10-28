@@ -302,14 +302,10 @@ namespace Image_Transformation
         {
             if (sourceQuadrilateral != null)
             {
-                double smallestX = Math.Min(sourceQuadrilateral.X0, sourceQuadrilateral.X3);
-                double smallestY = Math.Min(sourceQuadrilateral.Y0, sourceQuadrilateral.Y1);
-
-                double greatestX = Math.Min(sourceQuadrilateral.X1, sourceQuadrilateral.X2);
-                double greatestY = Math.Min(sourceQuadrilateral.Y2, sourceQuadrilateral.Y3);
-
-                double targetHeight = greatestY - smallestY;
-                double targetWidth = greatestX - smallestX;
+                double targetWidth = Math.Max(sourceQuadrilateral.X1 - sourceQuadrilateral.X0,
+                                              sourceQuadrilateral.X2 - sourceQuadrilateral.X3);
+                double targetHeight = Math.Max(sourceQuadrilateral.Y2 - sourceQuadrilateral.Y1,
+                                              sourceQuadrilateral.Y3 - sourceQuadrilateral.Y0);
 
                 Quadrilateral targetQuadrilateral = new Quadrilateral(new List<Point>
                 {

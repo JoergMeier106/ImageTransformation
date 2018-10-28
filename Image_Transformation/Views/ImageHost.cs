@@ -29,7 +29,7 @@ namespace Image_Transformation.Views
         {
             _children = new VisualCollection(this);
             Points = new ObservableCollection<Point>();
-            MouseUp += OnMouseUp;
+            MouseLeftButtonUp += OnMouseUp;
         }
 
         public WriteableBitmap Image
@@ -145,9 +145,18 @@ namespace Image_Transformation.Views
                 DrawingVisual drawingVisual = new DrawingVisual();
                 DrawingContext drawingContext = drawingVisual.RenderOpen();
 
-                double ratio = image.Height / image.Width;
-                _adjustedWidth = (int)width;
-                _adjustedHeight = (int)(width * ratio);
+                if (image.Height > image.Width)
+                {
+                    double ratio = image.Width / image.Height;
+                    _adjustedWidth = (int)(height * ratio);
+                    _adjustedHeight = (int)height;
+                }
+                else
+                {
+                    double ratio = image.Height / image.Width;
+                    _adjustedWidth = (int)width;
+                    _adjustedHeight = (int)(width * ratio);
+                }
 
                 drawingContext.DrawImage(image, new Rect(0, 0, _adjustedWidth, _adjustedHeight));
                 drawingContext.Close();
