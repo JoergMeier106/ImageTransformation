@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows;
 
 namespace Image_Transformation
 {
@@ -12,7 +13,7 @@ namespace Image_Transformation
             { 0, 0, 1 },
         });
 
-        private double[,] _matrix;
+        private readonly double[,] _matrix;
 
         public TransformationMatrix(double[,] matrix)
         {
@@ -28,13 +29,32 @@ namespace Image_Transformation
             _matrix = new double[height, width];
         }
 
-        public int Height { get; }   
+        public int Height { get; }
         public int Width { get; }
 
         public double this[int y, int x]
         {
             get { return _matrix[y, x]; }
             private set { _matrix[y, x] = value; }
+        }
+
+        public static TransformationMatrix GetTransformationFromUnitSquare(Rectangel rectangel)
+        {
+            double a00 = GetA00(rectangel);
+            double a01 = GetA01(rectangel);
+            double a02 = GetA02(rectangel);
+            double a10 = GetA10(rectangel);
+            double a11 = GetA11(rectangel);
+            double a12 = GetA12(rectangel);
+            double a20 = GetA20(rectangel);
+            double a21 = GetA21(rectangel);
+
+            return new TransformationMatrix(new double[,]
+            {
+                { a00, a01, a02 },
+                { a10, a11, a12 },
+                { a20, a21, 1   }
+            });
         }
 
         public static bool operator !=(TransformationMatrix matrix1, TransformationMatrix matrix2)
@@ -87,6 +107,65 @@ namespace Image_Transformation
             hashCode = hashCode * -1521134295 + Height.GetHashCode();
             hashCode = hashCode * -1521134295 + Width.GetHashCode();
             return hashCode;
+        }
+
+        public static TransformationMatrix Map(TransformationMatrix sourceMatrix, Func<double, double> action)
+        {
+            TransformationMatrix targetMatrix = new TransformationMatrix(sourceMatrix.Height, sourceMatrix.Width);
+            for (int y = 0; y < sourceMatrix.Height; y++)
+            {
+                for (int x = 0; x < sourceMatrix.Width; x++)
+                {
+                    targetMatrix[y, x] = action(sourceMatrix[y, x]);
+                }
+            }
+            return targetMatrix;
+        }
+
+        public static TransformationMatrix operator *(TransformationMatrix matrix, double value)
+        {
+            return Map(matrix, (sourceValue) => sourceValue * value);
+        }
+
+        public TransformationMatrix Invert()
+        {
+            double a00 = this[0, 0];
+            double a01 = this[0, 1];
+            double a02 = this[0, 2];
+            double a10 = this[1, 0];
+            double a11 = this[1, 1];
+            double a12 = this[1, 2];
+            double a20 = this[2, 0];
+            double a21 = this[2, 1];
+            double a22 = this[2, 2];
+
+            double determinant = GetDeterminant();
+
+            TransformationMatrix adjugateMatrix = new TransformationMatrix(new double[,]
+            {
+                { a11*a22-a12*a21, a02*a21-a01*a22, a01*a12-a02*a11 },
+                { a12*a20-a10*a22, a00*a22-a02*a20, a02*a10-a00*a12 },
+                { a10*a21-a11*a20, a01*a20-a00*a21, a00*a11-a01*a10 },
+            });
+
+            TransformationMatrix inversedMatrix = adjugateMatrix * (1 / determinant);
+
+            return inversedMatrix;
+        }
+
+        private double GetDeterminant()
+        {
+            double a00 = this[0, 0];
+            double a01 = this[0, 1];
+            double a02 = this[0, 2];
+            double a10 = this[1, 0];
+            double a11 = this[1, 1];
+            double a12 = this[1, 2];
+            double a20 = this[2, 0];
+            double a21 = this[2, 1];
+            double a22 = this[2, 2];
+
+            return a00 * a11 * a22 + a01 * a12 * a20 + a02 * a10 * a21 - a00 * a12 * a21 - a01 * a10 * a22 - a02 * a11 * a20;
         }
 
         public TransformationMatrix Rotate(double alpha, int xc, int yc)
@@ -143,6 +222,103 @@ namespace Image_Transformation
                 { 0, 0, 1  },
             });
             return this * shiftingMatrix;
+        }
+
+        private static double GetA00(Rectangel rectangel)
+        {
+            double x0 = rectangel.X0;
+            double x1 = rectangel.X1;
+
+            return x1 - x0 + GetA20(rectangel) * x1;
+        }
+
+        private static double GetA01(Rectangel rectangel)
+        {
+            double x0 = rectangel.X0;
+            double x3 = rectangel.X3;
+
+            return x3 - x0 + GetA21(rectangel) * x3;
+        }
+
+        private static double GetA02(Rectangel rectangel)
+        {
+            return rectangel.X0;
+        }
+
+        private static double GetA10(Rectangel rectangel)
+        {
+            double y0 = rectangel.Y0;
+            double y1 = rectangel.Y1;
+
+            return y1 - y0 + GetA20(rectangel) * y1;
+        }
+
+        private static double GetA11(Rectangel rectangel)
+        {
+            double y0 = rectangel.Y0;
+            double y3 = rectangel.Y3;
+
+            return y3 - y0 + GetA21(rectangel) * y3;
+        }
+
+        private static double GetA12(Rectangel rectangel)
+        {
+            return rectangel.Y0;
+        }
+
+        private static double GetA20(Rectangel rectangel)
+        {
+            double x0 = rectangel.X0;
+            double x1 = rectangel.X1;
+            double x2 = rectangel.X2;
+            double x3 = rectangel.X3;
+
+            double y0 = rectangel.Y0;
+            double y1 = rectangel.Y1;
+            double y2 = rectangel.Y2;
+            double y3 = rectangel.Y3;
+
+            return ((x0 - x1 + x2 - x3) * (y3 - y2) - (y0 - y1 + y2 - y3) * (x3 - x2)) /
+                           ((x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2));
+        }
+
+        private static double GetA21(Rectangel rectangel)
+        {
+            double x0 = rectangel.X0;
+            double x1 = rectangel.X1;
+            double x2 = rectangel.X2;
+            double x3 = rectangel.X3;
+
+            double y0 = rectangel.Y0;
+            double y1 = rectangel.Y1;
+            double y2 = rectangel.Y2;
+            double y3 = rectangel.Y3;
+
+            return ((y0 - y1 + y2 - y3) * (x1 - x2) - (x0 - x1 + x2 - x3) * (y1 - y2)) /
+                           ((x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2));
+        }
+
+        public TransformationMatrix Project(Rectangel sourceRectangel)
+        {
+            if (sourceRectangel != null)
+            {
+                Rectangel targetRectangel = new Rectangel(new List<Point>
+                {
+                    new Point(0, 0),
+                    new Point(0, 512),
+                    new Point(512, 0),
+                    new Point(512, 512)
+                });
+
+                TransformationMatrix unitSquareToSourceTransformation = GetTransformationFromUnitSquare(sourceRectangel);
+                TransformationMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert();
+
+                TransformationMatrix unitSquareToTargetTransformation = GetTransformationFromUnitSquare(targetRectangel);
+
+                TransformationMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
+                return this * projectiveMapping;
+            }
+            return this;
         }
 
         private bool MatrixContentIsEqual(TransformationMatrix matrix)

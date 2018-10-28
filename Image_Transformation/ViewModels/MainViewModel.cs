@@ -1,11 +1,11 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Image_Transformation.ViewModels
@@ -14,8 +14,9 @@ namespace Image_Transformation.ViewModels
     {
         private readonly IBitmapBuilder _bitmapBuilder;
         private string _fileFormat;
-        private ImageSource _image;
+        private WriteableBitmap _image;
         private int _imageHeight;
+        private bool _imageIsOpen;
         private int _imageWidth;
         private int _layerCount;
         private bool _layerSliderEnabled;
@@ -25,7 +26,7 @@ namespace Image_Transformation.ViewModels
         private int _shearBy;
         private int _shiftDx;
         private int _shiftDy;
-        private bool _imageIsOpen;
+        private Rectangel _markerRectangel;
 
         public MainViewModel(IBitmapBuilder bitmapCreatorBuilder)
         {
@@ -75,7 +76,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public ImageSource Image
+        public WriteableBitmap Image
         {
             get
             {
@@ -98,6 +99,19 @@ namespace Image_Transformation.ViewModels
             {
                 _imageHeight = value;
                 RaisePropertyChanged(nameof(ImageHeight));
+            }
+        }
+
+        public bool ImageIsOpen
+        {
+            get
+            {
+                return _imageIsOpen;
+            }
+            set
+            {
+                _imageIsOpen = value;
+                RaisePropertyChanged(nameof(ImageIsOpen));
             }
         }
 
@@ -140,6 +154,21 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        public Rectangel MarkerRectangel
+        {
+            get
+            {
+                return _markerRectangel;
+            }
+            set
+            {
+                _markerRectangel = value;
+                _bitmapBuilder.Project(_markerRectangel);
+                UpdateImage();
+                RaisePropertyChanged(nameof(MarkerRectangel));
+            }
+        }
+
         public ICommand OpenImage
         {
             get
@@ -161,6 +190,20 @@ namespace Image_Transformation.ViewModels
                     }
                     ImageIsOpen = true;
                 });
+            }
+        }
+
+        public double RotationAlpha
+        {
+            get
+            {
+                return _bitmapBuilder.Alpha;
+            }
+            set
+            {
+                _bitmapBuilder.Rotate(value);
+                UpdateImage();
+                RaisePropertyChanged(nameof(RotationAlpha));
             }
         }
 
@@ -186,44 +229,6 @@ namespace Image_Transformation.ViewModels
                         }
                     }
                 });
-            }
-        }
-
-        public static System.Drawing.Bitmap BitmapSourceToBitmap2(BitmapSource srs)
-        {
-            int width = srs.PixelWidth;
-            int height = srs.PixelHeight;
-            int stride = width * ((srs.Format.BitsPerPixel + 7) / 8);
-            IntPtr ptr = IntPtr.Zero;
-            try
-            {
-                ptr = Marshal.AllocHGlobal(height * stride);
-                srs.CopyPixels(new Int32Rect(0, 0, width, height), ptr, height * stride, stride);
-                using (var btm = new System.Drawing.Bitmap(width, height, stride, System.Drawing.Imaging.PixelFormat.Format1bppIndexed, ptr))
-                {
-                    // Clone the bitmap so that we can dispose it and
-                    // release the unmanaged memory at ptr
-                    return new System.Drawing.Bitmap(btm);
-                }
-            }
-            finally
-            {
-                if (ptr != IntPtr.Zero)
-                    Marshal.FreeHGlobal(ptr);
-            }
-        }
-
-        public double RotationAlpha
-        {
-            get
-            {
-                return _bitmapBuilder.Alpha;
-            }
-            set
-            {
-                _bitmapBuilder.Rotate(value);
-                UpdateImage();
-                RaisePropertyChanged(nameof(RotationAlpha));
             }
         }
 
@@ -317,19 +322,6 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public bool ImageIsOpen
-        {
-            get
-            {
-                return _imageIsOpen;
-            }
-            set
-            {
-                _imageIsOpen = value;
-                RaisePropertyChanged(nameof(ImageIsOpen));
-            }
-        }
-
         private void RaisePropertyChanged(string propertyname)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
@@ -346,12 +338,13 @@ namespace Image_Transformation.ViewModels
             RotationAlpha = 0;
             ScaleSx = 1;
             ScaleSy = 1;
+            MarkerRectangel = null;
         }
 
         private void ShowImage()
         {
             FileFormat = Path.GetExtension(_bitmapBuilder.Path);
-            
+
             Image = _bitmapBuilder.Build();
             ImageHeight = (int)Image.Height;
             ImageWidth = (int)Image.Width;

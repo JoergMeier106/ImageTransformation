@@ -6,10 +6,11 @@ namespace Image_Transformation
     public class BitmapBuilder : IBitmapBuilder
     {
         private readonly AdjustBrightnessOperation _brightnessOperation;
+        private readonly IImageLoader _imageLoader;
         private readonly ImageMatrixLoader _imageMatrixLoader;
         private readonly List<IImageOperation> _imageOperations;
+        //private readonly ProjectiveMappingOperation _projectiveMapping;
         private readonly ShiftingOperation _shiftingOperation;
-        private readonly IImageLoader _imageLoader;
 
         public BitmapBuilder()
         {
@@ -17,6 +18,7 @@ namespace Image_Transformation
             _imageMatrixLoader = new ImageMatrixLoader();
             _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
             _shiftingOperation = new ShiftingOperation(_brightnessOperation);
+            //_projectiveMapping = new ProjectiveMappingOperation(_shiftingOperation);
 
             _imageLoader = _shiftingOperation;
         }
@@ -32,6 +34,7 @@ namespace Image_Transformation
         public string Path => _imageMatrixLoader.Path;
         public int Sx { get; private set; }
         public int Sy { get; private set; }
+        public Rectangel SourceRectangel { get; private set; }
 
         public IBitmapBuilder AddTransformation(IImageOperation transformation)
         {
@@ -39,7 +42,7 @@ namespace Image_Transformation
             return this;
         }
 
-        public BitmapSource Build()
+        public WriteableBitmap Build()
         {
             ImageMatrix imageMatrix = _imageLoader.GetImageMatrix();
 
@@ -47,7 +50,8 @@ namespace Image_Transformation
                 UnitMatrix.
                 Shear(Bx, By).
                 Scale(Sx, Sy).
-                Rotate(Alpha, imageMatrix.Width / 2, imageMatrix.Height / 2);
+                Rotate(Alpha, imageMatrix.Width / 2, imageMatrix.Height / 2).
+                Project(SourceRectangel);
 
             if (transformationMatrix != TransformationMatrix.UnitMatrix)
             {
@@ -60,6 +64,12 @@ namespace Image_Transformation
         public IBitmapBuilder ClearAllTransformation()
         {
             _imageOperations.Clear();
+            return this;
+        }
+
+        public IBitmapBuilder Project(Rectangel sourceRectangel)
+        {
+            SourceRectangel = sourceRectangel;
             return this;
         }
 

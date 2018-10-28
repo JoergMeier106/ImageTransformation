@@ -7,7 +7,5 @@
         double MetaFileBrightnessFactor { get; }
 
         ImageMatrix GetImageMatrix();
-
-        TransformationMatrix GetTransformationMatrix();
     }
 }

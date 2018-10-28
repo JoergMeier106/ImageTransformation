@@ -46,11 +46,6 @@
             }
         }
 
-        public TransformationMatrix GetTransformationMatrix()
-        {
-            return _imageLoader.GetTransformationMatrix();
-        }
-
         private bool MatrixMustBeUpdated()
         {
             return _lastDx != Dx || _lastDy != Dy || _imageLoader.MatrixChanged;

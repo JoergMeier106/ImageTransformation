@@ -35,11 +35,6 @@ namespace Image_Transformation
             return new ImageMatrix(Height, Width, _imageBytes);
         }
 
-        public TransformationMatrix GetTransformationMatrix()
-        {
-            return TransformationMatrix.UnitMatrix;
-        }
-
         private byte[] GetLayerBytes(byte[] rawBytes, int layer)
         {
             int imageSize = Height * Width * 2;

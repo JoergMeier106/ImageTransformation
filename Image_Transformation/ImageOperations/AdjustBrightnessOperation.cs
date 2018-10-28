@@ -33,11 +33,6 @@
             return _cashedMatrix;
         }
 
-        public TransformationMatrix GetTransformationMatrix()
-        {
-            return _imageLoader.GetTransformationMatrix();
-        }
-
         private void AdjustBrightness(ImageMatrix sourceMatrix, double brightnessFactor)
         {
             if (_lastBrightnessFactor != brightnessFactor || _imageLoader.MatrixChanged)

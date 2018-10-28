@@ -63,20 +63,17 @@ namespace Image_Transformation
 
         public static ImageMatrix operator *(ImageMatrix matrix, double value)
         {
-            Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
-            return matrix;
+            return Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
         }
 
         public static ImageMatrix operator /(ImageMatrix matrix, double value)
         {
-            Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
-            return matrix;
+            return Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
         }
 
         public static ImageMatrix operator +(ImageMatrix matrix, double value)
         {
-            Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
-            return matrix;
+            return Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
         }
 
         public static bool PointIsInBounds(int x, int y, int height, int width)
