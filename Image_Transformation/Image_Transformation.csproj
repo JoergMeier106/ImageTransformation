@@ -79,7 +79,7 @@
     <Compile Include="ImageOperations\AdjustBrightnessOperation.cs" />
     <Compile Include="ImageOperations\IImageOperation.cs" />
     <Compile Include="ImageOperations\ProjectiveMappingOperation.cs" />
-    <Compile Include="ImageOperations\Rectangel.cs" />
+    <Compile Include="ImageOperations\Quadrilateral.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />
     <Compile Include="ImageOperations\TransformationMatrix.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />

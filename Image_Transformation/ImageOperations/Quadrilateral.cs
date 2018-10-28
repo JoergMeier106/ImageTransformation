@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace Image_Transformation
 {
-    public class Rectangel
+    public class Quadrilateral
     {
-        public Rectangel(IEnumerable<Point> points)
+        public Quadrilateral(IEnumerable<Point> points)
         {
             if (points != null && points.Count() == 4)
             {

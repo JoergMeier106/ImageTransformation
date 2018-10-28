@@ -38,16 +38,16 @@ namespace Image_Transformation
             private set { _matrix[y, x] = value; }
         }
 
-        public static TransformationMatrix GetTransformationFromUnitSquare(Rectangel rectangel)
+        public static TransformationMatrix GetTransformationFromUnitSquare(Quadrilateral quadrilateral)
         {
-            double a00 = GetA00(rectangel);
-            double a01 = GetA01(rectangel);
-            double a02 = GetA02(rectangel);
-            double a10 = GetA10(rectangel);
-            double a11 = GetA11(rectangel);
-            double a12 = GetA12(rectangel);
-            double a20 = GetA20(rectangel);
-            double a21 = GetA21(rectangel);
+            double a00 = GetA00(quadrilateral);
+            double a01 = GetA01(quadrilateral);
+            double a02 = GetA02(quadrilateral);
+            double a10 = GetA10(quadrilateral);
+            double a11 = GetA11(quadrilateral);
+            double a12 = GetA12(quadrilateral);
+            double a20 = GetA20(quadrilateral);
+            double a21 = GetA21(quadrilateral);
 
             return new TransformationMatrix(new double[,]
             {
@@ -224,96 +224,105 @@ namespace Image_Transformation
             return this * shiftingMatrix;
         }
 
-        private static double GetA00(Rectangel rectangel)
+        private static double GetA00(Quadrilateral quadrilateral)
         {
-            double x0 = rectangel.X0;
-            double x1 = rectangel.X1;
+            double x0 = quadrilateral.X0;
+            double x1 = quadrilateral.X1;
 
-            return x1 - x0 + GetA20(rectangel) * x1;
+            return x1 - x0 + GetA20(quadrilateral) * x1;
         }
 
-        private static double GetA01(Rectangel rectangel)
+        private static double GetA01(Quadrilateral quadrilateral)
         {
-            double x0 = rectangel.X0;
-            double x3 = rectangel.X3;
+            double x0 = quadrilateral.X0;
+            double x3 = quadrilateral.X3;
 
-            return x3 - x0 + GetA21(rectangel) * x3;
+            return x3 - x0 + GetA21(quadrilateral) * x3;
         }
 
-        private static double GetA02(Rectangel rectangel)
+        private static double GetA02(Quadrilateral quadrilateral)
         {
-            return rectangel.X0;
+            return quadrilateral.X0;
         }
 
-        private static double GetA10(Rectangel rectangel)
+        private static double GetA10(Quadrilateral quadrilateral)
         {
-            double y0 = rectangel.Y0;
-            double y1 = rectangel.Y1;
+            double y0 = quadrilateral.Y0;
+            double y1 = quadrilateral.Y1;
 
-            return y1 - y0 + GetA20(rectangel) * y1;
+            return y1 - y0 + GetA20(quadrilateral) * y1;
         }
 
-        private static double GetA11(Rectangel rectangel)
+        private static double GetA11(Quadrilateral quadrilateral)
         {
-            double y0 = rectangel.Y0;
-            double y3 = rectangel.Y3;
+            double y0 = quadrilateral.Y0;
+            double y3 = quadrilateral.Y3;
 
-            return y3 - y0 + GetA21(rectangel) * y3;
+            return y3 - y0 + GetA21(quadrilateral) * y3;
         }
 
-        private static double GetA12(Rectangel rectangel)
+        private static double GetA12(Quadrilateral quadrilateral)
         {
-            return rectangel.Y0;
+            return quadrilateral.Y0;
         }
 
-        private static double GetA20(Rectangel rectangel)
+        private static double GetA20(Quadrilateral quadrilateral)
         {
-            double x0 = rectangel.X0;
-            double x1 = rectangel.X1;
-            double x2 = rectangel.X2;
-            double x3 = rectangel.X3;
+            double x0 = quadrilateral.X0;
+            double x1 = quadrilateral.X1;
+            double x2 = quadrilateral.X2;
+            double x3 = quadrilateral.X3;
 
-            double y0 = rectangel.Y0;
-            double y1 = rectangel.Y1;
-            double y2 = rectangel.Y2;
-            double y3 = rectangel.Y3;
+            double y0 = quadrilateral.Y0;
+            double y1 = quadrilateral.Y1;
+            double y2 = quadrilateral.Y2;
+            double y3 = quadrilateral.Y3;
 
             return ((x0 - x1 + x2 - x3) * (y3 - y2) - (y0 - y1 + y2 - y3) * (x3 - x2)) /
                            ((x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2));
         }
 
-        private static double GetA21(Rectangel rectangel)
+        private static double GetA21(Quadrilateral quadrilateral)
         {
-            double x0 = rectangel.X0;
-            double x1 = rectangel.X1;
-            double x2 = rectangel.X2;
-            double x3 = rectangel.X3;
+            double x0 = quadrilateral.X0;
+            double x1 = quadrilateral.X1;
+            double x2 = quadrilateral.X2;
+            double x3 = quadrilateral.X3;
 
-            double y0 = rectangel.Y0;
-            double y1 = rectangel.Y1;
-            double y2 = rectangel.Y2;
-            double y3 = rectangel.Y3;
+            double y0 = quadrilateral.Y0;
+            double y1 = quadrilateral.Y1;
+            double y2 = quadrilateral.Y2;
+            double y3 = quadrilateral.Y3;
 
             return ((y0 - y1 + y2 - y3) * (x1 - x2) - (x0 - x1 + x2 - x3) * (y1 - y2)) /
                            ((x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2));
         }
 
-        public TransformationMatrix Project(Rectangel sourceRectangel)
+        public TransformationMatrix Project(Quadrilateral sourceQuadrilateral)
         {
-            if (sourceRectangel != null)
+            if (sourceQuadrilateral != null)
             {
-                Rectangel targetRectangel = new Rectangel(new List<Point>
+                double smallestX = Math.Min(sourceQuadrilateral.X0, sourceQuadrilateral.X3);
+                double smallestY = Math.Min(sourceQuadrilateral.Y0, sourceQuadrilateral.Y1);
+
+                double greatestX = Math.Min(sourceQuadrilateral.X1, sourceQuadrilateral.X2);
+                double greatestY = Math.Min(sourceQuadrilateral.Y2, sourceQuadrilateral.Y3);
+
+                double targetHeight = greatestY - smallestY;
+                double targetWidth = greatestX - smallestX;
+
+                Quadrilateral targetQuadrilateral = new Quadrilateral(new List<Point>
                 {
                     new Point(0, 0),
-                    new Point(0, 512),
-                    new Point(512, 0),
-                    new Point(512, 512)
+                    new Point(0, targetHeight),
+                    new Point(targetWidth, 0),
+                    new Point(targetWidth, targetHeight)
                 });
 
-                TransformationMatrix unitSquareToSourceTransformation = GetTransformationFromUnitSquare(sourceRectangel);
+                TransformationMatrix unitSquareToSourceTransformation = GetTransformationFromUnitSquare(sourceQuadrilateral);
                 TransformationMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert();
 
-                TransformationMatrix unitSquareToTargetTransformation = GetTransformationFromUnitSquare(targetRectangel);
+                TransformationMatrix unitSquareToTargetTransformation = GetTransformationFromUnitSquare(targetQuadrilateral);
 
                 TransformationMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
                 return this * projectiveMapping;

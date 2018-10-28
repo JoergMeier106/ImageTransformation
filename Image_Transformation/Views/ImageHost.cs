@@ -10,13 +10,14 @@ namespace Image_Transformation.Views
 {
     public class ImageHost : FrameworkElement
     {
-        private readonly List<Point> _points;
-
         public static readonly DependencyProperty ImageProperty =
             DependencyProperty.Register(nameof(Image), typeof(WriteableBitmap), typeof(ImageHost), new PropertyMetadata(ImagePropertyChanged));
 
-        public static readonly DependencyProperty RectangelProperty =
-            DependencyProperty.Register(nameof(Rectangel), typeof(Rectangel), typeof(ImageHost), new PropertyMetadata(RectangelPropertyChanged));
+        public static readonly DependencyProperty QuadrilateralProperty =
+            DependencyProperty.Register(nameof(Quadrilateral), typeof(Quadrilateral), typeof(ImageHost), new PropertyMetadata(QuadrilateralPropertyChanged));
+
+        public static readonly DependencyProperty PointsProperty =
+            DependencyProperty.Register(nameof(Points), typeof(ObservableCollection<Point>), typeof(ImageHost), new PropertyMetadata(PointsPropertyChanged));
 
         private const int CROSS_SIZE = 40;
 
@@ -27,7 +28,7 @@ namespace Image_Transformation.Views
         public ImageHost()
         {
             _children = new VisualCollection(this);
-            _points = new List<Point>();
+            Points = new ObservableCollection<Point>();
             MouseUp += OnMouseUp;
         }
 
@@ -37,10 +38,16 @@ namespace Image_Transformation.Views
             set { SetValue(ImageProperty, value); }
         }
 
-        public Rectangel Rectangel
+        public Quadrilateral Quadrilateral
         {
-            get { return (Rectangel)GetValue(RectangelProperty); }
-            set { SetValue(RectangelProperty, value); }
+            get { return (Quadrilateral)GetValue(QuadrilateralProperty); }
+            set { SetValue(QuadrilateralProperty, value); }
+        }
+
+        public ObservableCollection<Point> Points
+        {
+            get { return (ObservableCollection<Point>)GetValue(PointsProperty); }
+            set { SetValue(PointsProperty, value); }
         }
 
         protected override int VisualChildrenCount => _children.Count;
@@ -58,11 +65,19 @@ namespace Image_Transformation.Views
             }
         }
 
-        private static void RectangelPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        private static void PointsPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
             if (dependencyObject is ImageHost host)
             {
-                host.RectangelPropertyChanged();
+                host.PointsPropertyChanged();
+            }
+        }
+
+        private static void QuadrilateralPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        {
+            if (dependencyObject is ImageHost host)
+            {
+                host.QuadrilateralPropertyChanged();
             }
         }
 
@@ -97,18 +112,29 @@ namespace Image_Transformation.Views
             CreateImage(image, width, height);
         }
 
-        private void RectangelPropertyChanged()
+        private void QuadrilateralPropertyChanged()
         {
-            if (Rectangel == null)
+            if (Quadrilateral == null)
             {
-                _children.RemoveRange(_children.Count - 4, 4);
-
-                if (_children.Count >= 2)
+                if (_children.Count == 6)
                 {
                     _children.RemoveAt(1);
                 }
+            }
+        }
 
-                _points.Clear();
+        private void PointsPropertyChanged()
+        {
+            if (Points == null || !Points.Any())
+            {
+                if (_children.Count > 4)
+                {
+                    _children.RemoveRange(_children.Count - 4, 4);
+                }
+                else if (_children.Count > 1)
+                {
+                    _children.RemoveRange(1, _children.Count - 1);
+                }
             }
         }
 
@@ -139,7 +165,7 @@ namespace Image_Transformation.Views
             DrawingVisual drawingVisual = new DrawingVisual();
             DrawingContext drawingContext = drawingVisual.RenderOpen();
 
-            Rectangel drawingRectangel = new Rectangel(_points);
+            Quadrilateral drawingRectangel = new Quadrilateral(Points);
 
             Pen pen = new Pen
             {
@@ -175,29 +201,29 @@ namespace Image_Transformation.Views
 
         private void AddCross(Point point)
         {
-            if (_points.Count >= 4)
+            if (Points.Count >= 4)
             {
-                _points.RemoveAt(0);
+                Points.RemoveAt(0);
                 _children.RemoveAt(2);
             }
-            _points.Add(point);
+            Points.Add(point);
             CreateCross(point.X, point.Y);
 
-            if (_points.Count == 4)
+            if (Points.Count == 4)
             {
                 ConnectCrosses();
-                CreateRectangle();
+                CreateQuadrilateral();
             }
         }
 
-        private void CreateRectangle()
+        private void CreateQuadrilateral()
         {
             List<Point> pointsOnImage = new List<Point>();
-            _points.ForEach((point) =>
+            foreach (Point point in Points)
             {
                 pointsOnImage.Add(new Point((point.X / _adjustedWidth) * Image.Width, (point.Y / _adjustedHeight) * Image.Height));
-            });
-            Rectangel = new Rectangel(pointsOnImage);
+            }
+            Quadrilateral = new Quadrilateral(pointsOnImage);
         }
     }
 }

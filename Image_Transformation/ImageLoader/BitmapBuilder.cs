@@ -9,7 +9,6 @@ namespace Image_Transformation
         private readonly IImageLoader _imageLoader;
         private readonly ImageMatrixLoader _imageMatrixLoader;
         private readonly List<IImageOperation> _imageOperations;
-        //private readonly ProjectiveMappingOperation _projectiveMapping;
         private readonly ShiftingOperation _shiftingOperation;
 
         public BitmapBuilder()
@@ -18,7 +17,6 @@ namespace Image_Transformation
             _imageMatrixLoader = new ImageMatrixLoader();
             _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
             _shiftingOperation = new ShiftingOperation(_brightnessOperation);
-            //_projectiveMapping = new ProjectiveMappingOperation(_shiftingOperation);
 
             _imageLoader = _shiftingOperation;
         }
@@ -34,7 +32,7 @@ namespace Image_Transformation
         public string Path => _imageMatrixLoader.Path;
         public int Sx { get; private set; }
         public int Sy { get; private set; }
-        public Rectangel SourceRectangel { get; private set; }
+        public Quadrilateral SourceQuadrilateral { get; private set; }
 
         public IBitmapBuilder AddTransformation(IImageOperation transformation)
         {
@@ -51,7 +49,7 @@ namespace Image_Transformation
                 Shear(Bx, By).
                 Scale(Sx, Sy).
                 Rotate(Alpha, imageMatrix.Width / 2, imageMatrix.Height / 2).
-                Project(SourceRectangel);
+                Project(SourceQuadrilateral);
 
             if (transformationMatrix != TransformationMatrix.UnitMatrix)
             {
@@ -67,9 +65,9 @@ namespace Image_Transformation
             return this;
         }
 
-        public IBitmapBuilder Project(Rectangel sourceRectangel)
+        public IBitmapBuilder Project(Quadrilateral sourceQuadrilateral)
         {
-            SourceRectangel = sourceRectangel;
+            SourceQuadrilateral = sourceQuadrilateral;
             return this;
         }
 

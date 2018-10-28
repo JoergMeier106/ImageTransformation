@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Image_Transformation"
         xmlns:views="clr-namespace:Image_Transformation.Views"
         mc:Ignorable="d"
-        Title="Image Transformation" Height="450" Width="800">
+        Title="Image Transformation">
     <Window.Resources>
         <local:ToNegativeConverter x:Key="toNegative" />
         <local:ToVisibilityConverter x:Key="toVisibility" />
@@ -23,7 +23,8 @@
                 Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}"/>
         <views:ImageHost Grid.Column="0" 
                          Image="{Binding Image}"
-                         Rectangel="{Binding MarkerRectangel, Mode=TwoWay}"
+                         Points="{Binding QuadrilateralPoints, Mode=TwoWay}"
+                         Quadrilateral="{Binding MarkerQuadrilateral, Mode=TwoWay}"
                          Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}"/>
         <StackPanel Grid.Column="1" Background="AliceBlue">
             <Button Content="Open Image"
@@ -41,6 +42,7 @@
                         <ColumnDefinition Width="2*" />
                     </Grid.ColumnDefinitions>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
                         <RowDefinition Height="1*" />
@@ -169,6 +171,21 @@
                         TickFrequency="0.5"
                         Value="{Binding RotationAlpha, Mode=TwoWay}"
                         IsEnabled="{Binding ImageIsOpen}" />
+                    <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
+                        Content="Project"
+                        Command="{Binding Project}"
+                        Margin="10,10,10,10"
+                        Padding="0,5,0,5"
+                        BorderBrush="Gray"
+                        Background="AliceBlue" 
+                        IsEnabled="{Binding ProjectEnabled}"/>
+                    <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="11"
+                        Content="Clear"
+                        Command="{Binding ClearMarker}"
+                        Margin="10,10,10,10"
+                        Padding="0,5,0,5"
+                        BorderBrush="Gray"
+                        Background="AliceBlue"/>
                 </Grid>
             </ScrollViewer>
             <Button Content="Save Image"

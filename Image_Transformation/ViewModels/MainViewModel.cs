@@ -1,9 +1,7 @@
 ﻿using Microsoft.Win32;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
@@ -20,17 +18,20 @@ namespace Image_Transformation.ViewModels
         private int _imageWidth;
         private int _layerCount;
         private bool _layerSliderEnabled;
+        private Quadrilateral _markerQuadrilateral;
+        private bool _projectEnabled;
         private int _scaleSx;
         private int _scaleSy;
         private int _shearBx;
         private int _shearBy;
         private int _shiftDx;
         private int _shiftDy;
-        private Rectangel _markerRectangel;
+        private ObservableCollection<Point> _quadrilateralPoints;
 
         public MainViewModel(IBitmapBuilder bitmapCreatorBuilder)
         {
             _bitmapBuilder = bitmapCreatorBuilder;
+            QuadrilateralPoints = new ObservableCollection<Point>();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -154,18 +155,30 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public Rectangel MarkerRectangel
+        public Quadrilateral MarkerQuadrilateral
         {
             get
             {
-                return _markerRectangel;
+                return _markerQuadrilateral;
             }
             set
             {
-                _markerRectangel = value;
-                _bitmapBuilder.Project(_markerRectangel);
-                UpdateImage();
-                RaisePropertyChanged(nameof(MarkerRectangel));
+                _markerQuadrilateral = value;
+                ProjectEnabled = _markerQuadrilateral != null;
+                RaisePropertyChanged(nameof(MarkerQuadrilateral));
+            }
+        }
+
+        public ObservableCollection<Point> QuadrilateralPoints
+        {
+            get
+            {
+                return _quadrilateralPoints;
+            }
+            set
+            {
+                _quadrilateralPoints = value;
+                RaisePropertyChanged(nameof(QuadrilateralPoints));
             }
         }
 
@@ -190,6 +203,47 @@ namespace Image_Transformation.ViewModels
                     }
                     ImageIsOpen = true;
                 });
+            }
+        }
+
+        public ICommand Project
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    _bitmapBuilder.Project(_markerQuadrilateral);
+                    MarkerQuadrilateral = null;
+                    QuadrilateralPoints = new ObservableCollection<Point>();
+                    UpdateImage();
+                });
+            }
+        }
+
+        public ICommand ClearMarker
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    MarkerQuadrilateral = null;
+                    QuadrilateralPoints = new ObservableCollection<Point>();
+                    _bitmapBuilder.Project(MarkerQuadrilateral);
+                    UpdateImage();
+                });
+            }
+        }
+
+        public bool ProjectEnabled
+        {
+            get
+            {
+                return _projectEnabled;
+            }
+            set
+            {
+                _projectEnabled = value;
+                RaisePropertyChanged(nameof(ProjectEnabled));
             }
         }
 
@@ -338,7 +392,8 @@ namespace Image_Transformation.ViewModels
             RotationAlpha = 0;
             ScaleSx = 1;
             ScaleSy = 1;
-            MarkerRectangel = null;
+            MarkerQuadrilateral = null;
+            QuadrilateralPoints = new ObservableCollection<Point>();
         }
 
         private void ShowImage()

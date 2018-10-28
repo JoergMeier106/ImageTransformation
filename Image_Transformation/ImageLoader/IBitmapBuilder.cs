@@ -13,13 +13,13 @@ namespace Image_Transformation
         int Layer { get; }
         int LayerCount { get; }
         string Path { get; }
-        Rectangel SourceRectangel { get; }
+        Quadrilateral SourceQuadrilateral { get; }
         int Sx { get; }
         int Sy { get; }
 
         WriteableBitmap Build();
 
-        IBitmapBuilder Project(Rectangel sourceRectangel);
+        IBitmapBuilder Project(Quadrilateral sourceQuadrilateral);
 
         IBitmapBuilder Rotate(double alpha);
 
