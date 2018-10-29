@@ -32,7 +32,8 @@
                     _lastDy = Dy;
 
                     TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix.Shift(Dx, Dy);
-                    _cashedMatrix = ImageMatrix.Transform(sourceMatrix, new ImageMatrix(sourceMatrix.Height, sourceMatrix.Width, 2), shiftingMatrix);
+                    _cashedMatrix = ImageMatrix.Transform(sourceMatrix, 
+                        new ImageMatrix(sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.BytePerPixel), shiftingMatrix);
                 }
 
                 return _cashedMatrix;

@@ -29,15 +29,16 @@ namespace Image_Transformation
                 ReadMetaInformation();
 
                 byte[] rawBytes = File.ReadAllBytes(Path);
-                _imageBytes = GetLayerBytes(rawBytes, Layer);
-                LayerCount = rawBytes.Length / (Width * Height * 2);
+                int bytesPerPixel = rawBytes.Length / (Height * Width);
+                _imageBytes = GetLayerBytes(rawBytes, Layer, bytesPerPixel);
+                LayerCount = rawBytes.Length / (Width * Height * bytesPerPixel);
             }
             return new ImageMatrix(Height, Width, _imageBytes);
         }
 
-        private byte[] GetLayerBytes(byte[] rawBytes, int layer)
+        private byte[] GetLayerBytes(byte[] rawBytes, int layer, int bytesPerPixel)
         {
-            int imageSize = Height * Width * 2;
+            int imageSize = Height * Width * bytesPerPixel;
             int imagePosition = imageSize * layer;
 
             byte[] targetRawBytes = new byte[imageSize];

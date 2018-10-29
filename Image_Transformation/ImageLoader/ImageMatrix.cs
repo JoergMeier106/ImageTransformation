@@ -96,7 +96,7 @@ namespace Image_Transformation
                 }
             }
 
-            return CreateNewSizedMatrix(transformedPoints);
+            return CreateNewSizedMatrix(transformedPoints, sourceMatrix.BytePerPixel);
         }
 
         public static ImageMatrix Transform(ImageMatrix sourceMatrix, TransformationMatrix transformationMatrix)
@@ -163,7 +163,7 @@ namespace Image_Transformation
 
         public ImageMatrix Rotate(double alpha)
         {
-            ImageMatrix rotatedMatrix = Transform(this, new ImageMatrix(Height, Width, 2), (x, y) =>
+            ImageMatrix rotatedMatrix = Transform(this, new ImageMatrix(Height, Width, BytePerPixel), (x, y) =>
             {
                 int xc = Width / 2;
                 int yc = Height / 2;
@@ -201,7 +201,7 @@ namespace Image_Transformation
 
         public ImageMatrix Shift(int dx, int dy)
         {
-            return Transform(this, new ImageMatrix(Height, Width, 2), (x, y) =>
+            return Transform(this, new ImageMatrix(Height, Width, BytePerPixel), (x, y) =>
             {
                 x = x + dx;
                 y = y + dy;
@@ -219,7 +219,7 @@ namespace Image_Transformation
             });
         }
 
-        private static ImageMatrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints)
+        private static ImageMatrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints, int bytePerPixel)
         {
             int smallestX = transformedPoints.Select(point => point.Key.x).Min();
             int smallestY = transformedPoints.Select(point => point.Key.y).Min();
@@ -230,7 +230,7 @@ namespace Image_Transformation
             int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
             int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
 
-            ImageMatrix transformedMatrix = new ImageMatrix(newHeight, newWidth, new byte[newHeight * newWidth * 2]);
+            ImageMatrix transformedMatrix = new ImageMatrix(newHeight, newWidth, new byte[newHeight * newWidth * bytePerPixel]);
 
             foreach (var (x, y) in transformedPoints.Keys)
             {
@@ -253,7 +253,14 @@ namespace Image_Transformation
                 int x = ConvertIndexToX(i / BytePerPixel, Width);
                 int y = ConvertIndexToY(i, Width * BytePerPixel);
 
-                _matrix[y, x] = BitConverter.ToUInt16(bytes, i);
+                if (BytePerPixel == 2)
+                {
+                    _matrix[y, x] = BitConverter.ToUInt16(bytes, i);
+                }
+                else if (BytePerPixel == 1)
+                {
+                    _matrix[y, x] = bytes[i];
+                }
             }
         }
     }
