@@ -9,6 +9,7 @@ namespace Image_Transformation
         private int _lastLayer;
         private string _lastPath;
 
+        public int BytePerPixel { get; private set; }
         public int Height { get; private set; }
         public int Layer { get; set; }
         public int LayerCount { get; private set; }
@@ -29,9 +30,8 @@ namespace Image_Transformation
                 ReadMetaInformation();
 
                 byte[] rawBytes = File.ReadAllBytes(Path);
-                int bytesPerPixel = rawBytes.Length / (Height * Width);
-                _imageBytes = GetLayerBytes(rawBytes, Layer, bytesPerPixel);
-                LayerCount = rawBytes.Length / (Width * Height * bytesPerPixel);
+                _imageBytes = GetLayerBytes(rawBytes, Layer, BytePerPixel);
+                LayerCount = rawBytes.Length / (Width * Height * BytePerPixel);
             }
             return new ImageMatrix(Height, Width, _imageBytes);
         }
@@ -55,6 +55,7 @@ namespace Image_Transformation
 
             Width = metaInformation.Width;
             Height = metaInformation.Height;
+            BytePerPixel = metaInformation.BytePerPixel;
             MetaFileBrightnessFactor = metaInformation.BrightnessFactor;
         }
     }

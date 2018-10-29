@@ -5,6 +5,7 @@ namespace Image_Transformation
 {
     public class BitmapBuilder : IBitmapBuilder
     {
+        private readonly BilinearOperation _bilinearOperation;
         private readonly AdjustBrightnessOperation _brightnessOperation;
         private readonly IImageLoader _imageLoader;
         private readonly ImageMatrixLoader _imageMatrixLoader;
@@ -17,8 +18,9 @@ namespace Image_Transformation
             _imageMatrixLoader = new ImageMatrixLoader();
             _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
             _shiftingOperation = new ShiftingOperation(_brightnessOperation);
+            _bilinearOperation = new BilinearOperation(_shiftingOperation);
 
-            _imageLoader = _shiftingOperation;
+            _imageLoader = _bilinearOperation;
         }
 
         public double Alpha { get; private set; }
@@ -30,9 +32,9 @@ namespace Image_Transformation
         public int Layer => _imageMatrixLoader.Layer;
         public int LayerCount => _imageLoader.LayerCount;
         public string Path => _imageMatrixLoader.Path;
+        public Quadrilateral SourceQuadrilateral { get; private set; }
         public double Sx { get; private set; }
         public double Sy { get; private set; }
-        public Quadrilateral SourceQuadrilateral { get; private set; }
 
         public IBitmapBuilder AddTransformation(IImageOperation transformation)
         {
@@ -62,6 +64,12 @@ namespace Image_Transformation
         public IBitmapBuilder ClearAllTransformation()
         {
             _imageOperations.Clear();
+            return this;
+        }
+
+        public IBitmapBuilder MapBilinear(Quadrilateral sourceQuadrilateral)
+        {
+            _bilinearOperation.Quadrilateral = sourceQuadrilateral;
             return this;
         }
 

@@ -220,6 +220,20 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        public ICommand MapBilinear
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    _bitmapBuilder.MapBilinear(_markerQuadrilateral);
+                    MarkerQuadrilateral = null;
+                    QuadrilateralPoints = new ObservableCollection<Point>();
+                    UpdateImage();
+                });
+            }
+        }
+
         public ICommand ClearMarker
         {
             get
@@ -227,6 +241,7 @@ namespace Image_Transformation.ViewModels
                 return new RelayCommand((args) =>
                 {
                     MarkerQuadrilateral = null;
+                    _bitmapBuilder.MapBilinear(null);
                     QuadrilateralPoints = new ObservableCollection<Point>();
                     _bitmapBuilder.Project(MarkerQuadrilateral);
                     UpdateImage();

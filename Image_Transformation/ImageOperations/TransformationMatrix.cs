@@ -38,7 +38,7 @@ namespace Image_Transformation
             private set { _matrix[y, x] = value; }
         }
 
-        public static TransformationMatrix GetTransformationFromUnitSquare(Quadrilateral quadrilateral)
+        public static TransformationMatrix GetProjectionTransformationFromUnitSquare(Quadrilateral quadrilateral)
         {
             double a00 = GetA00(quadrilateral);
             double a01 = GetA01(quadrilateral);
@@ -315,10 +315,10 @@ namespace Image_Transformation
                     new Point(targetWidth, targetHeight)
                 });
 
-                TransformationMatrix unitSquareToSourceTransformation = GetTransformationFromUnitSquare(sourceQuadrilateral);
+                TransformationMatrix unitSquareToSourceTransformation = GetProjectionTransformationFromUnitSquare(sourceQuadrilateral);
                 TransformationMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert();
 
-                TransformationMatrix unitSquareToTargetTransformation = GetTransformationFromUnitSquare(targetQuadrilateral);
+                TransformationMatrix unitSquareToTargetTransformation = GetProjectionTransformationFromUnitSquare(targetQuadrilateral);
 
                 TransformationMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
                 return this * projectiveMapping;

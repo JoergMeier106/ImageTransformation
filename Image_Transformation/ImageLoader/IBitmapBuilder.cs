@@ -19,6 +19,8 @@ namespace Image_Transformation
 
         WriteableBitmap Build();
 
+        IBitmapBuilder MapBilinear(Quadrilateral sourceQuadrilateral);
+
         IBitmapBuilder Project(Quadrilateral sourceQuadrilateral);
 
         IBitmapBuilder Rotate(double alpha);

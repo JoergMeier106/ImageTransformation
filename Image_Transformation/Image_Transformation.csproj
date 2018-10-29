@@ -38,12 +38,17 @@
     <LangVersion>7.1</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MathNet.Numerics, Version=4.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.6.0\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -80,6 +85,7 @@
     <Compile Include="ImageOperations\IImageOperation.cs" />
     <Compile Include="ImageOperations\ProjectiveMappingOperation.cs" />
     <Compile Include="ImageOperations\Quadrilateral.cs" />
+    <Compile Include="ImageOperations\BilinearOperation.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />
     <Compile Include="ImageOperations\TransformationMatrix.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
