@@ -30,8 +30,8 @@ namespace Image_Transformation
         public int Layer => _imageMatrixLoader.Layer;
         public int LayerCount => _imageLoader.LayerCount;
         public string Path => _imageMatrixLoader.Path;
-        public int Sx { get; private set; }
-        public int Sy { get; private set; }
+        public double Sx { get; private set; }
+        public double Sy { get; private set; }
         public Quadrilateral SourceQuadrilateral { get; private set; }
 
         public IBitmapBuilder AddTransformation(IImageOperation transformation)
@@ -77,7 +77,7 @@ namespace Image_Transformation
             return this;
         }
 
-        public IBitmapBuilder Scale(int sx, int sy)
+        public IBitmapBuilder Scale(double sx, double sy)
         {
             Sx = sx;
             Sy = sy;

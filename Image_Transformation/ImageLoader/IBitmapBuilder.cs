@@ -14,8 +14,8 @@ namespace Image_Transformation
         int LayerCount { get; }
         string Path { get; }
         Quadrilateral SourceQuadrilateral { get; }
-        int Sx { get; }
-        int Sy { get; }
+        double Sx { get; }
+        double Sy { get; }
 
         WriteableBitmap Build();
 
@@ -23,7 +23,7 @@ namespace Image_Transformation
 
         IBitmapBuilder Rotate(double alpha);
 
-        IBitmapBuilder Scale(int sx, int sy);
+        IBitmapBuilder Scale(double sx, double sy);
 
         IBitmapBuilder SetBrightness(double brightness);
 

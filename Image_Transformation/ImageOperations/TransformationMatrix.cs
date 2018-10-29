@@ -191,7 +191,7 @@ namespace Image_Transformation
             return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
         }
 
-        public TransformationMatrix Scale(int sx, int sy)
+        public TransformationMatrix Scale(double sx, double sy)
         {
             TransformationMatrix scalingMatrix = new TransformationMatrix(new double[,]
             {

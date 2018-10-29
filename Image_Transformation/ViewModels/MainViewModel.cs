@@ -20,8 +20,8 @@ namespace Image_Transformation.ViewModels
         private bool _layerSliderEnabled;
         private Quadrilateral _markerQuadrilateral;
         private bool _projectEnabled;
-        private int _scaleSx;
-        private int _scaleSy;
+        private double _scaleSx;
+        private double _scaleSy;
         private int _shearBx;
         private int _shearBy;
         private int _shiftDx;
@@ -286,7 +286,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public int ScaleSx
+        public double ScaleSx
         {
             get
             {
@@ -301,7 +301,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public int ScaleSy
+        public double ScaleSy
         {
             get
             {
