@@ -58,7 +58,7 @@ namespace Image_Transformation
                 double y2_ = targetQuadrilateral.Y2;
                 double y3_ = targetQuadrilateral.Y3;
 
-                var matrix = Matrix<double>.Build.DenseOfArray(new double[,]
+                var m = Matrix<double>.Build.DenseOfArray(new double[,]
                 {
                     { x0, y0, x0*y0, 1 },
                     { x1, y1, x1*y1, 1 },
@@ -67,18 +67,18 @@ namespace Image_Transformation
                 });
                 var targetXVector = Vector<Double>.Build.Dense(new double[] { x0_, x1_, x2_, x3_ });
                 var targetYVector = Vector<Double>.Build.Dense(new double[] { y0_, y1_, y2_, y3_ });
-                var aVector = matrix.Solve(targetXVector);
-                var bVector = matrix.Solve(targetYVector);
+                var a = m.Solve(targetXVector);
+                var b = m.Solve(targetYVector);
 
-                double a0 = aVector[0];
-                double a1 = aVector[1];
-                double a2 = aVector[2];
-                double a3 = aVector[3];
+                double a0 = a[0];
+                double a1 = a[1];
+                double a2 = a[2];
+                double a3 = a[3];
 
-                double b0 = bVector[0];
-                double b1 = bVector[1];
-                double b2 = bVector[2];
-                double b3 = bVector[3];
+                double b0 = b[0];
+                double b1 = b[1];
+                double b2 = b[2];
+                double b3 = b[3];
 
                 return ImageMatrix.Transform(sourceMatrix, (x, y) =>
                 {
