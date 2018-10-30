@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Image_Transformation
 {
@@ -109,6 +112,17 @@ namespace Image_Transformation
             });
         }
 
+        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix imageMatrix,
+            TransformationMatrix transformationMatrix)
+        {
+            return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y) =>
+            {
+                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+            });
+        }
+
         public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix imageMatrix, TransformationMatrix transformationMatrix)
         {
             return Transform(sourceMatrix, imageMatrix, (x, y) =>
@@ -117,6 +131,24 @@ namespace Image_Transformation
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
                 return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
             });
+        }
+
+        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix targetMatrix,
+            Func<int, int, (int x, int y)> transformFunction)
+        {
+            for (int y = 0; y < targetMatrix.Height; y++)
+            {
+                for (int x = 0; x < targetMatrix.Width; x++)
+                {
+                    var sourcePoint = transformFunction(x, y);
+                    
+                    if (PointIsInBounds(sourcePoint.x, sourcePoint.y, sourceMatrix.Height, sourceMatrix.Width))
+                    {
+                        targetMatrix[y, x] = sourceMatrix[sourcePoint.y, sourcePoint.x];
+                    }
+                }
+            }            
+            return targetMatrix;
         }
 
         public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)

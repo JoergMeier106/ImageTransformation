@@ -55,126 +55,140 @@
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
-                <Label Grid.Column="0" Grid.Row="0"
-                       Content="Height:" />
-                <Label Grid.Column="3" Grid.Row="0"
-                       Content="{Binding ImageHeight}"
-                       Margin="0,2,10,2" />
+                <CheckBox x:Name="sourceToTargetBox"
+                    Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2"
+                    Content="Source to Target"
+                    IsEnabled="{Binding ImageIsOpen}"
+                    IsChecked="{Binding SourceToTargetEnabled, Mode=TwoWay}"/>
                 <Label Grid.Column="0" Grid.Row="1"
-                       Content="Width:" />
-                <Label Grid.Column="3" Grid.Row="1"
-                       Content="{Binding ImageWidth}"
-                       Margin="0,2,10,2" />
+                       IsEnabled="{Binding ImageIsOpen}"
+                       Content="Height:" />
+                <TextBox Grid.Column="1" Grid.Row="1"
+                       Text="{Binding ImageHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       IsEnabled="{Binding ImageIsOpen}"
+                       PreviewTextInput="TextBox_PreviewTextInput"
+                       Margin="0,2,10,2" 
+                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}"/>
                 <Label Grid.Column="0" Grid.Row="2"
+                       IsEnabled="{Binding ImageIsOpen}"
+                       Content="Width:" />
+                <TextBox Grid.Column="1" Grid.Row="2"
+                       Text="{Binding ImageWidth, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       IsEnabled="{Binding ImageIsOpen}"
+                       PreviewTextInput="TextBox_PreviewTextInput"
+                       Margin="0,2,10,2"
+                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}"/>
+                <Label Grid.Column="0" Grid.Row="3"
                        Content="Brightness:" 
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="2"
+                <Label Grid.Column="1" Grid.Row="3"
                        Content="{Binding Brightness}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="2"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="3"
                         Maximum="100"
                         Value="{Binding Brightness, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="3"
+                <Label Grid.Column="0" Grid.Row="4"
                        Content="Layer:"
                        IsEnabled="{Binding LayerSliderEnabled}" />
-                <Label Grid.Column="1" Grid.Row="3"
+                <Label Grid.Column="1" Grid.Row="4"
                        Content="{Binding CurrentLayer}"
                        IsEnabled="{Binding LayerSliderEnabled}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="3"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="4"
                         Maximum="{Binding LayerCount}"
                         Value="{Binding CurrentLayer, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding LayerSliderEnabled}" />
-                <Label Grid.Column="0" Grid.Row="4"
+                <Label Grid.Column="0" Grid.Row="5"
                        Content="Dx:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="4"
+                <Label Grid.Column="1" Grid.Row="5"
                        Content="{Binding ShiftDx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="4"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="5"
                         Maximum="{Binding ImageWidth}"
                         Minimum="{Binding ImageWidth, Converter={StaticResource toNegative}}"
                         Value="{Binding ShiftDx, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="5"
+                <Label Grid.Column="0" Grid.Row="6"
                        Content="Dy:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="5"
+                <Label Grid.Column="1" Grid.Row="6"
                        Content="{Binding ShiftDy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="5"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="6"
                         Maximum="{Binding ImageHeight}"
                         Minimum="{Binding ImageHeight, Converter={StaticResource toNegative}}"
                         Value="{Binding ShiftDy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="6"
+                <Label Grid.Column="0" Grid.Row="7"
                        Content="Bx:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="6"
+                <Label Grid.Column="1" Grid.Row="7"
                        Content="{Binding ShearBx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="6"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7"
                         Maximum="10"
                         Minimum="-10"
                         Value="{Binding ShearBx, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="7"
+                <Label Grid.Column="0" Grid.Row="8"
                        Content="By:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="7"
+                <Label Grid.Column="1" Grid.Row="8"
                        Content="{Binding ShearBy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="8"
                         Maximum="10"
                         Minimum="-10"
                         Value="{Binding ShearBy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="8"
+                <Label Grid.Column="0" Grid.Row="9"
                        Content="Sx:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="8"
+                <Label Grid.Column="1" Grid.Row="9"
                        Content="{Binding ScaleSx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="8"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="9"
                         Maximum="10"
                         Minimum="0"
                         TickFrequency="0.1"
                         Value="{Binding ScaleSx, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="9"
+                <Label Grid.Column="0" Grid.Row="10"
                        Content="Sy:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="9"
+                <Label Grid.Column="1" Grid.Row="10"
                        Content="{Binding ScaleSy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="9"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="10"
                         Maximum="10"
                         Minimum="0"
                         TickFrequency="0.1"
                         Value="{Binding ScaleSy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="10"
+                <Label Grid.Column="0" Grid.Row="11"
                        Content="Rotation:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="10"
+                <Label Grid.Column="1" Grid.Row="11"
                        Content="{Binding RotationAlpha}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="10"
+                <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
                         Maximum="3.14159265359"
                         Minimum="-3.14159265359"
                         TickFrequency="0.5"
                         Value="{Binding RotationAlpha, Mode=TwoWay}"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
+                <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="12"
                         Content="Project"
                         Command="{Binding Project}"
                         Margin="10,10,10,10"
@@ -182,14 +196,14 @@
                         BorderBrush="Gray"
                         Background="AliceBlue" 
                         IsEnabled="{Binding ProjectEnabled}"/>
-                <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="11"
+                <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="12"
                         Content="Clear Marker"
                         Command="{Binding ClearMarker}"
                         Margin="10,10,10,10"
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
                         Background="AliceBlue"/>
-                <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="12"
+                <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
                         Content="Map Bilinear"
                         Command="{Binding MapBilinear}"
                         Margin="10,10,10,10"

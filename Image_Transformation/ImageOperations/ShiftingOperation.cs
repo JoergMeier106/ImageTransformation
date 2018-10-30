@@ -1,4 +1,6 @@
-﻿namespace Image_Transformation
+﻿using System.Threading.Tasks;
+
+namespace Image_Transformation
 {
     public class ShiftingOperation : IImageOperation
     {
@@ -31,8 +33,8 @@
                     _lastDx = Dx;
                     _lastDy = Dy;
 
-                    TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix.Shift(Dx, Dy);
-                    _cashedMatrix = ImageMatrix.Transform(sourceMatrix, 
+                    TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix.Shift(Dx * (-1), Dy * (-1));
+                    _cashedMatrix = ImageMatrix.TransformTargetToSource(sourceMatrix,
                         new ImageMatrix(sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.BytePerPixel), shiftingMatrix);
                 }
 

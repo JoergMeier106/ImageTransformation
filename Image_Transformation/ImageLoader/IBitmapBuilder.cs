@@ -1,8 +1,10 @@
-﻿using System.Windows.Media.Imaging;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using System.Windows.Media.Imaging;
 
 namespace Image_Transformation
 {
-    public interface IBitmapBuilder
+    public interface IImageMatrixBuilder
     {
         double Alpha { get; }
         double Brightness { get; }
@@ -16,25 +18,34 @@ namespace Image_Transformation
         Quadrilateral SourceQuadrilateral { get; }
         double Sx { get; }
         double Sy { get; }
+        int TargetImageHeight { get; }
+        int TargetImageWidth { get; }
+        bool SourceToTargetEnabled { get; }
 
-        WriteableBitmap Build();
+        ImageMatrix Build();
 
-        IBitmapBuilder MapBilinear(Quadrilateral sourceQuadrilateral);
+        IImageMatrixBuilder MapBilinear(Quadrilateral sourceQuadrilateral);
 
-        IBitmapBuilder Project(Quadrilateral sourceQuadrilateral);
+        IImageMatrixBuilder Project(Quadrilateral sourceQuadrilateral);
 
-        IBitmapBuilder Rotate(double alpha);
+        IImageMatrixBuilder Rotate(double alpha);
 
-        IBitmapBuilder Scale(double sx, double sy);
+        IImageMatrixBuilder Scale(double sx, double sy);
 
-        IBitmapBuilder SetBrightness(double brightness);
+        IImageMatrixBuilder SetBrightness(double brightness);
 
-        IBitmapBuilder SetLayer(int layer);
+        IImageMatrixBuilder SetLayer(int layer);
 
-        IBitmapBuilder SetPath(string path);
+        IImageMatrixBuilder SetPath(string path);
 
-        IBitmapBuilder Shear(int bx, int by);
+        IImageMatrixBuilder Shear(int bx, int by);
 
-        IBitmapBuilder Shift(int dx, int dy);
+        IImageMatrixBuilder Shift(int dx, int dy);
+
+        IImageMatrixBuilder SetSourceToTargetEnabled(bool value);
+
+        IImageMatrixBuilder SetTargetImageHeight(int imageHeight);
+
+        IImageMatrixBuilder SetTargetImageWidth(int imageWidth);
     }
 }

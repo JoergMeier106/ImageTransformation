@@ -1,16 +1,22 @@
 ﻿using Microsoft.Win32;
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Image_Transformation.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private readonly IBitmapBuilder _bitmapBuilder;
+        private CancellationTokenSource _cancellationTokenSource;
+        private readonly IImageMatrixBuilder _bitmapBuilder;
         private string _fileFormat;
         private WriteableBitmap _image;
         private int _imageHeight;
@@ -20,18 +26,20 @@ namespace Image_Transformation.ViewModels
         private bool _layerSliderEnabled;
         private Quadrilateral _markerQuadrilateral;
         private bool _projectEnabled;
+        private ObservableCollection<Point> _quadrilateralPoints;
         private double _scaleSx;
         private double _scaleSy;
         private int _shearBx;
         private int _shearBy;
         private int _shiftDx;
         private int _shiftDy;
-        private ObservableCollection<Point> _quadrilateralPoints;
 
-        public MainViewModel(IBitmapBuilder bitmapCreatorBuilder)
+        public MainViewModel(IImageMatrixBuilder bitmapCreatorBuilder)
         {
             _bitmapBuilder = bitmapCreatorBuilder;
             QuadrilateralPoints = new ObservableCollection<Point>();
+            _cancellationTokenSource = new CancellationTokenSource();
+            SourceToTargetEnabled = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -47,6 +55,21 @@ namespace Image_Transformation.ViewModels
                 _bitmapBuilder.SetBrightness(value);
                 UpdateImage();
                 RaisePropertyChanged(nameof(Brightness));
+            }
+        }
+
+        public ICommand ClearMarker
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    MarkerQuadrilateral = null;
+                    _bitmapBuilder.MapBilinear(null);
+                    QuadrilateralPoints = new ObservableCollection<Point>();
+                    _bitmapBuilder.Project(MarkerQuadrilateral);
+                    UpdateImage();
+                });
             }
         }
 
@@ -99,6 +122,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _imageHeight = value;
+                _bitmapBuilder.SetTargetImageHeight(_imageHeight);
                 RaisePropertyChanged(nameof(ImageHeight));
             }
         }
@@ -125,6 +149,7 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _imageWidth = value;
+                _bitmapBuilder.SetTargetImageWidth(_imageWidth);
                 RaisePropertyChanged(nameof(ImageWidth));
             }
         }
@@ -155,6 +180,20 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        public ICommand MapBilinear
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    _bitmapBuilder.MapBilinear(_markerQuadrilateral);
+                    MarkerQuadrilateral = null;
+                    QuadrilateralPoints = new ObservableCollection<Point>();
+                    UpdateImage();
+                });
+            }
+        }
+
         public Quadrilateral MarkerQuadrilateral
         {
             get
@@ -166,19 +205,6 @@ namespace Image_Transformation.ViewModels
                 _markerQuadrilateral = value;
                 ProjectEnabled = _markerQuadrilateral != null;
                 RaisePropertyChanged(nameof(MarkerQuadrilateral));
-            }
-        }
-
-        public ObservableCollection<Point> QuadrilateralPoints
-        {
-            get
-            {
-                return _quadrilateralPoints;
-            }
-            set
-            {
-                _quadrilateralPoints = value;
-                RaisePropertyChanged(nameof(QuadrilateralPoints));
             }
         }
 
@@ -199,9 +225,9 @@ namespace Image_Transformation.ViewModels
                         Resetvalues();
 
                         _bitmapBuilder.SetPath(openFileDialog.FileName);
-                        ShowImage();
+                        ImageIsOpen = true;
+                        UpdateImage();
                     }
-                    ImageIsOpen = true;
                 });
             }
         }
@@ -220,35 +246,6 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public ICommand MapBilinear
-        {
-            get
-            {
-                return new RelayCommand((args) =>
-                {
-                    _bitmapBuilder.MapBilinear(_markerQuadrilateral);
-                    MarkerQuadrilateral = null;
-                    QuadrilateralPoints = new ObservableCollection<Point>();
-                    UpdateImage();
-                });
-            }
-        }
-
-        public ICommand ClearMarker
-        {
-            get
-            {
-                return new RelayCommand((args) =>
-                {
-                    MarkerQuadrilateral = null;
-                    _bitmapBuilder.MapBilinear(null);
-                    QuadrilateralPoints = new ObservableCollection<Point>();
-                    _bitmapBuilder.Project(MarkerQuadrilateral);
-                    UpdateImage();
-                });
-            }
-        }
-
         public bool ProjectEnabled
         {
             get
@@ -259,6 +256,19 @@ namespace Image_Transformation.ViewModels
             {
                 _projectEnabled = value;
                 RaisePropertyChanged(nameof(ProjectEnabled));
+            }
+        }
+
+        public ObservableCollection<Point> QuadrilateralPoints
+        {
+            get
+            {
+                return _quadrilateralPoints;
+            }
+            set
+            {
+                _quadrilateralPoints = value;
+                RaisePropertyChanged(nameof(QuadrilateralPoints));
             }
         }
 
@@ -391,6 +401,20 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        public bool SourceToTargetEnabled
+        {
+            get
+            {
+                return _bitmapBuilder.SourceToTargetEnabled;
+            }
+            set
+            {
+                _bitmapBuilder.SetSourceToTargetEnabled(value);
+                UpdateImage();
+                RaisePropertyChanged(nameof(SourceToTargetEnabled));
+            }
+        }
+
         private void RaisePropertyChanged(string propertyname)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
@@ -409,25 +433,46 @@ namespace Image_Transformation.ViewModels
             ScaleSy = 1;
             MarkerQuadrilateral = null;
             _bitmapBuilder.MapBilinear(null);
+            _bitmapBuilder.Project(null);
             QuadrilateralPoints = new ObservableCollection<Point>();
         }
 
-        private void ShowImage()
+        private async Task ShowImage(CancellationToken cancellationToken)
         {
             FileFormat = Path.GetExtension(_bitmapBuilder.Path);
+            ImageMatrix imageMatrix = await Task.Factory.StartNew(() => _bitmapBuilder.Build());
 
-            Image = _bitmapBuilder.Build();
-            ImageHeight = (int)Image.Height;
-            ImageWidth = (int)Image.Width;
-            LayerCount = _bitmapBuilder.LayerCount - 1;
-            LayerSliderEnabled = LayerCount > 1;
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                Dispatcher.CurrentDispatcher.Invoke(() =>
+                {
+                    Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
+                    ImageHeight = (int)Image.Height;
+                    ImageWidth = (int)Image.Width;
+                    LayerCount = _bitmapBuilder.LayerCount - 1;
+                    LayerSliderEnabled = LayerCount > 1;
+                });
+            }
         }
 
         private void UpdateImage()
         {
-            if (ImageIsOpen)
+            try
             {
-                ShowImage();
+                _cancellationTokenSource.Cancel();
+                _cancellationTokenSource = new CancellationTokenSource();
+                if (ImageIsOpen)
+                {
+                    ShowImage(_cancellationTokenSource.Token);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
+            catch (Exception e)
+            {
+
             }
         }
     }

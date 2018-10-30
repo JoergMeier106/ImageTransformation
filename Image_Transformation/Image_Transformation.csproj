@@ -76,14 +76,13 @@
     <Compile Include="ImageLoader\IImageLoader.cs" />
     <Compile Include="ImageLoader\IBitmapBuilder.cs" />
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
-    <Compile Include="ImageLoader\BitmapBuilder.cs" />
+    <Compile Include="ImageLoader\ImageMatrixBuilder.cs" />
     <Compile Include="ImageLoader\JsonParser.cs" />
     <Compile Include="ImageLoader\ImageMatrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
     <Compile Include="ImageLoader\ImageMetaInformation.cs" />
     <Compile Include="ImageOperations\AdjustBrightnessOperation.cs" />
     <Compile Include="ImageOperations\IImageOperation.cs" />
-    <Compile Include="ImageOperations\ProjectiveMappingOperation.cs" />
     <Compile Include="ImageOperations\Quadrilateral.cs" />
     <Compile Include="ImageOperations\BilinearOperation.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />

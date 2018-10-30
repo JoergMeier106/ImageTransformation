@@ -1,4 +1,6 @@
-﻿namespace Image_Transformation
+﻿using System.Threading.Tasks;
+
+namespace Image_Transformation
 {
     public interface IImageLoader
     {
