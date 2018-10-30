@@ -1,6 +1,4 @@
 ﻿using Microsoft.Win32;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -15,8 +13,8 @@ namespace Image_Transformation.ViewModels
 {
     public class MainViewModel : INotifyPropertyChanged
     {
-        private CancellationTokenSource _cancellationTokenSource;
         private readonly IImageMatrixBuilder _bitmapBuilder;
+        private CancellationTokenSource _cancellationTokenSource;
         private string _fileFormat;
         private WriteableBitmap _image;
         private int _imageHeight;
@@ -43,6 +41,8 @@ namespace Image_Transformation.ViewModels
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
+
+        public bool AsyncEnabled { get; set; }
 
         public double Brightness
         {
@@ -437,7 +437,22 @@ namespace Image_Transformation.ViewModels
             QuadrilateralPoints = new ObservableCollection<Point>();
         }
 
-        private async Task ShowImage(CancellationToken cancellationToken)
+        private void ShowImage()
+        {
+            FileFormat = Path.GetExtension(_bitmapBuilder.Path);
+            ImageMatrix imageMatrix = _bitmapBuilder.Build();
+
+            Dispatcher.CurrentDispatcher.Invoke(() =>
+            {
+                Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
+                ImageHeight = (int)Image.Height;
+                ImageWidth = (int)Image.Width;
+                LayerCount = _bitmapBuilder.LayerCount - 1;
+                LayerSliderEnabled = LayerCount > 1;
+            });
+        }
+
+        private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
             FileFormat = Path.GetExtension(_bitmapBuilder.Path);
             ImageMatrix imageMatrix = await Task.Factory.StartNew(() => _bitmapBuilder.Build());
@@ -457,22 +472,18 @@ namespace Image_Transformation.ViewModels
 
         private void UpdateImage()
         {
-            try
+            if (ImageIsOpen)
             {
-                _cancellationTokenSource.Cancel();
-                _cancellationTokenSource = new CancellationTokenSource();
-                if (ImageIsOpen)
+                if (AsyncEnabled)
                 {
-                    ShowImage(_cancellationTokenSource.Token);
+                    _cancellationTokenSource.Cancel();
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    ShowImageAsync(_cancellationTokenSource.Token);
                 }
-            }
-            catch (OperationCanceledException)
-            {
-
-            }
-            catch (Exception e)
-            {
-
+                else
+                {
+                    ShowImage();
+                }
             }
         }
     }
