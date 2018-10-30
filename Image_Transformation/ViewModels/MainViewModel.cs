@@ -408,6 +408,7 @@ namespace Image_Transformation.ViewModels
             ScaleSx = 1;
             ScaleSy = 1;
             MarkerQuadrilateral = null;
+            _bitmapBuilder.MapBilinear(null);
             QuadrilateralPoints = new ObservableCollection<Point>();
         }
 
