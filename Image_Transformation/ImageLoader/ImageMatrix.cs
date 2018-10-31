@@ -138,7 +138,7 @@ namespace Image_Transformation
         {
             Parallel.For(0, targetMatrix.Height, (y) =>
             {
-                for (int x = 0; x < targetMatrix.Width; x++)
+                Parallel.For(0, targetMatrix.Width, (x) =>
                 {
                     var sourcePoint = transformFunction(x, y);
 
@@ -146,12 +146,8 @@ namespace Image_Transformation
                     {
                         targetMatrix[y, x] = sourceMatrix[sourcePoint.y, sourcePoint.x];
                     }
-                }
-            });
-            //for (int y = 0; y < targetMatrix.Height; y++)
-            //{
-                
-            //}            
+                });
+            });          
             return targetMatrix;
         }
 
