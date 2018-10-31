@@ -33,8 +33,8 @@ namespace Image_Transformation
                     _lastDx = Dx;
                     _lastDy = Dy;
 
-                    TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix.Shift(Dx * (-1), Dy * (-1));
-                    _cashedMatrix = ImageMatrix.TransformTargetToSource(sourceMatrix,
+                    TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix.Shift(Dx, Dy);
+                    _cashedMatrix = ImageMatrix.Transform(sourceMatrix,
                         new ImageMatrix(sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.BytePerPixel), shiftingMatrix);
                 }
 

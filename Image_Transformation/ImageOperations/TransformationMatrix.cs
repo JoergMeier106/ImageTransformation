@@ -202,7 +202,7 @@ namespace Image_Transformation
             return this * scalingMatrix;
         }
 
-        public TransformationMatrix Shear(int bx, int by)
+        public TransformationMatrix Shear(double bx, double by)
         {
             TransformationMatrix shearingMatrix = new TransformationMatrix(new double[,]
             {

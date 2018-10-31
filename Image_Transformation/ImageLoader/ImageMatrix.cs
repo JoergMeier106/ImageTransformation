@@ -136,18 +136,22 @@ namespace Image_Transformation
         public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix targetMatrix,
             Func<int, int, (int x, int y)> transformFunction)
         {
-            for (int y = 0; y < targetMatrix.Height; y++)
+            Parallel.For(0, targetMatrix.Height, (y) =>
             {
                 for (int x = 0; x < targetMatrix.Width; x++)
                 {
                     var sourcePoint = transformFunction(x, y);
-                    
+
                     if (PointIsInBounds(sourcePoint.x, sourcePoint.y, sourceMatrix.Height, sourceMatrix.Width))
                     {
                         targetMatrix[y, x] = sourceMatrix[sourcePoint.y, sourcePoint.x];
                     }
                 }
-            }            
+            });
+            //for (int y = 0; y < targetMatrix.Height; y++)
+            //{
+                
+            //}            
             return targetMatrix;
         }
 

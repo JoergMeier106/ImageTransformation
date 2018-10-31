@@ -140,6 +140,7 @@
                 <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7"
                         Maximum="10"
                         Minimum="-10"
+                        TickFrequency="0.1"
                         Value="{Binding ShearBx, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
@@ -152,6 +153,7 @@
                 <Slider Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="8"
                         Maximum="10"
                         Minimum="-10"
+                        TickFrequency="0.1"
                         Value="{Binding ShearBy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />

@@ -8,8 +8,8 @@ namespace Image_Transformation
     {
         double Alpha { get; }
         double Brightness { get; }
-        int Bx { get; }
-        int By { get; }
+        double Bx { get; }
+        double By { get; }
         int Dx { get; }
         int Dy { get; }
         int Layer { get; }
@@ -38,7 +38,7 @@ namespace Image_Transformation
 
         IImageMatrixBuilder SetPath(string path);
 
-        IImageMatrixBuilder Shear(int bx, int by);
+        IImageMatrixBuilder Shear(double bx, double by);
 
         IImageMatrixBuilder Shift(int dx, int dy);
 

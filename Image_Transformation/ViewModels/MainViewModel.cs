@@ -27,8 +27,8 @@ namespace Image_Transformation.ViewModels
         private ObservableCollection<Point> _quadrilateralPoints;
         private double _scaleSx;
         private double _scaleSy;
-        private int _shearBx;
-        private int _shearBy;
+        private double _shearBx;
+        private double _shearBy;
         private int _shiftDx;
         private int _shiftDy;
 
@@ -341,7 +341,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public int ShearBx
+        public double ShearBx
         {
             get
             {
@@ -356,7 +356,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public int ShearBy
+        public double ShearBy
         {
             get
             {

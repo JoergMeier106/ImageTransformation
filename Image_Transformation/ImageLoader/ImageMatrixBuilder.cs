@@ -24,8 +24,8 @@ namespace Image_Transformation
 
         public double Alpha { get; private set; }
         public double Brightness => _brightnessOperation.BrightnessFactor;
-        public int Bx { get; private set; }
-        public int By { get; private set; }
+        public double Bx { get; private set; }
+        public double By { get; private set; }
         public int Dx => _shiftingOperation.Dx;
         public int Dy => _shiftingOperation.Dy;
         public int Layer => _imageMatrixLoader.Layer;
@@ -111,7 +111,7 @@ namespace Image_Transformation
             return this;
         }
 
-        public IImageMatrixBuilder Shear(int bx, int by)
+        public IImageMatrixBuilder Shear(double bx, double by)
         {
             Bx = bx;
             By = by;
