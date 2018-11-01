@@ -89,6 +89,7 @@
     <Compile Include="ImageOperations\TransformationMatrix.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
+    <Compile Include="Views\CommandSlider.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
