@@ -37,7 +37,6 @@ namespace Image_Transformation.ViewModels
             _bitmapBuilder = bitmapCreatorBuilder;
             QuadrilateralPoints = new ObservableCollection<Point>();
             _cancellationTokenSource = new CancellationTokenSource();
-            SourceToTargetEnabled = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -228,6 +227,17 @@ namespace Image_Transformation.ViewModels
                         ImageIsOpen = true;
                         UpdateImage();
                     }
+                });
+            }
+        }
+
+        public ICommand ResetAll
+        {
+            get
+            {
+                return new RelayCommand((args) =>
+                {
+                    Resetvalues();
                 });
             }
         }
@@ -431,6 +441,7 @@ namespace Image_Transformation.ViewModels
             RotationAlpha = 0;
             ScaleSx = 1;
             ScaleSy = 1;
+            SourceToTargetEnabled = true;
             MarkerQuadrilateral = null;
             _bitmapBuilder.MapBilinear(null);
             _bitmapBuilder.Project(null);

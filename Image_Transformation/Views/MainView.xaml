@@ -210,6 +210,13 @@
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
                         Background="AliceBlue"/>
+                <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="13"
+                        Content="Reset All"
+                        Command="{Binding ResetAll}"
+                        Margin="10,10,10,10"
+                        Padding="0,5,0,5"
+                        BorderBrush="Gray"
+                        Background="AliceBlue"/>
                 <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
                         Content="Map Bilinear"
                         Command="{Binding MapBilinear}"
