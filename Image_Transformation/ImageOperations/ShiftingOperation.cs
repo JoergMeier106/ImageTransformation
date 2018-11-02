@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Image_Transformation
+﻿namespace Image_Transformation
 {
     public class ShiftingOperation : IImageOperation
     {

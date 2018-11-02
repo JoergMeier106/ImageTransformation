@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,12 +10,15 @@ namespace Image_Transformation
     {
         private readonly ushort[,] _matrix;
 
+        private CancellationTokenSource _tokenSource;
+
         public ImageMatrix(int height, int width, byte[] bytes)
         {
             Height = height;
             Width = width;
             _matrix = new ushort[Height, Width];
             BytePerPixel = bytes.Length / (Height * Width);
+            _tokenSource = new CancellationTokenSource();
 
             CreateMatrix(bytes);
         }
@@ -27,6 +29,7 @@ namespace Image_Transformation
             Width = width;
             _matrix = new ushort[Height, Width];
             BytePerPixel = bytePerPixel;
+            _tokenSource = new CancellationTokenSource();
         }
 
         public int BytePerPixel { get; private set; }
@@ -112,17 +115,6 @@ namespace Image_Transformation
             });
         }
 
-        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix imageMatrix,
-            TransformationMatrix transformationMatrix)
-        {
-            return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y) =>
-            {
-                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
-                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
-                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
-            });
-        }
-
         public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix imageMatrix, TransformationMatrix transformationMatrix)
         {
             return Transform(sourceMatrix, imageMatrix, (x, y) =>
@@ -131,24 +123,6 @@ namespace Image_Transformation
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
                 return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
             });
-        }
-
-        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix targetMatrix,
-            Func<int, int, (int x, int y)> transformFunction)
-        {
-            Parallel.For(0, targetMatrix.Height, (y) =>
-            {
-                Parallel.For(0, targetMatrix.Width, (x) =>
-                {
-                    var sourcePoint = transformFunction(x, y);
-
-                    if (PointIsInBounds(sourcePoint.x, sourcePoint.y, sourceMatrix.Height, sourceMatrix.Width))
-                    {
-                        targetMatrix[y, x] = sourceMatrix[sourcePoint.y, sourcePoint.x];
-                    }
-                });
-            });          
-            return targetMatrix;
         }
 
         public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
@@ -167,6 +141,52 @@ namespace Image_Transformation
                 }
             }
             return targetMatrix;
+        }
+
+        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix imageMatrix,
+                            TransformationMatrix transformationMatrix)
+        {
+            return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y) =>
+            {
+                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+            });
+        }
+
+        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix targetMatrix,
+            Func<int, int, (int x, int y)> transformFunction)
+        {
+            sourceMatrix.CancelParallelTransformation();
+            ParallelOptions options = CreateParallelOptions(sourceMatrix);
+
+            try
+            {
+                Parallel.For(0, targetMatrix.Height, options, (y) =>
+                {
+                    Parallel.For(0, targetMatrix.Width, options, (x) =>
+                    {
+                        var sourcePoint = transformFunction(x, y);
+
+                        if (PointIsInBounds(sourcePoint.x, sourcePoint.y, sourceMatrix.Height, sourceMatrix.Width))
+                        {
+                            targetMatrix[y, x] = sourceMatrix[sourcePoint.y, sourcePoint.x];
+                        }
+                    });
+                });
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("Operation Cancelled");
+            }
+            return targetMatrix;
+        }
+
+        public void CancelParallelTransformation()
+        {
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
+            _tokenSource = new CancellationTokenSource();
         }
 
         public byte[] GetBytes()
@@ -270,6 +290,15 @@ namespace Image_Transformation
             }
 
             return transformedMatrix;
+        }
+
+        private static ParallelOptions CreateParallelOptions(ImageMatrix matrix)
+        {
+            return new ParallelOptions
+            {
+                CancellationToken = matrix._tokenSource.Token,
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
         }
 
         private int ConvertIndexToX(int index, int width) => index % width;

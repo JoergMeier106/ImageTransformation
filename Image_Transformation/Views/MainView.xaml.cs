@@ -1,6 +1,5 @@
 ﻿using System.Text.RegularExpressions;
 using System.Windows;
-using System.Windows.Input;
 
 namespace Image_Transformation.Views
 {

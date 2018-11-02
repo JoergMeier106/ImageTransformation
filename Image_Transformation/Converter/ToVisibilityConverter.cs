@@ -18,7 +18,7 @@ namespace Image_Transformation
                 else
                 {
                     return Visibility.Hidden;
-                }                
+                }
             }
             return value;
         }

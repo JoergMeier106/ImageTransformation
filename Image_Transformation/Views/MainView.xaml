@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:Image_Transformation"
         xmlns:views="clr-namespace:Image_Transformation.Views"
         mc:Ignorable="d"
-        Background="AliceBlue" 
+        Background="AliceBlue"
         Title="Image Transformation" MinWidth="770" MinHeight="500">
     <Window.Resources>
         <local:ToNegativeConverter x:Key="toNegative" />
@@ -19,14 +19,14 @@
         </Grid.ColumnDefinitions>
         <Label Content="No Image loaded"
                HorizontalAlignment="Center"
-               VerticalAlignment="Center"/>
-        <Canvas Background="Black" 
-                Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}"/>
-        <views:ImageHost Grid.Column="0" 
+               VerticalAlignment="Center" />
+        <Canvas Background="Black"
+                Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}" />
+        <views:ImageHost Grid.Column="0"
                          Image="{Binding Image}"
                          Points="{Binding QuadrilateralPoints, Mode=TwoWay}"
                          Quadrilateral="{Binding MarkerQuadrilateral, Mode=TwoWay}"
-                         Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}"/>
+                         Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}" />
         <StackPanel Grid.Column="1" Background="AliceBlue" Margin="0,0,10,0">
             <Button Content="Open Image"
                 Command="{Binding OpenImage}"
@@ -62,12 +62,12 @@
                     Content="Source to Target"
                     Command="{Binding Update}"
                     IsEnabled="{Binding ImageIsOpen}"
-                    IsChecked="{Binding SourceToTargetEnabled, Mode=TwoWay}"/>
-                <CheckBox 
+                    IsChecked="{Binding SourceToTargetEnabled, Mode=TwoWay}" />
+                <CheckBox
                     Grid.Column="2" Grid.Row="2" Grid.ColumnSpan="2"
                     Content="Asynchronous"
                     IsEnabled="{Binding ImageIsOpen}"
-                    IsChecked="{Binding AsyncEnabled, Mode=TwoWay}"/>
+                    IsChecked="{Binding AsyncEnabled, Mode=TwoWay}" />
                 <Label Grid.Column="0" Grid.Row="1"
                        IsEnabled="{Binding ImageIsOpen}"
                        Content="Height:" />
@@ -75,8 +75,8 @@
                        Text="{Binding ImageHeight, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                        IsEnabled="{Binding ImageIsOpen}"
                        PreviewTextInput="TextBox_PreviewTextInput"
-                       Margin="0,2,10,2" 
-                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}"/>
+                       Margin="0,2,10,2"
+                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}" />
                 <Label Grid.Column="0" Grid.Row="2"
                        IsEnabled="{Binding ImageIsOpen}"
                        Content="Width:" />
@@ -85,14 +85,14 @@
                        IsEnabled="{Binding ImageIsOpen}"
                        PreviewTextInput="TextBox_PreviewTextInput"
                        Margin="0,2,10,2"
-                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}"/>
+                       IsReadOnly="{Binding IsChecked, ElementName=sourceToTargetBox}" />
                 <Label Grid.Column="0" Grid.Row="3"
-                       Content="Brightness:" 
+                       Content="Brightness:"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="1" Grid.Row="3"
                        Content="{Binding Brightness}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="3"
                         Maximum="100"
                         Command="{Binding Update}"
@@ -105,7 +105,7 @@
                 <Label Grid.Column="1" Grid.Row="4"
                        Content="{Binding CurrentLayer}"
                        IsEnabled="{Binding LayerSliderEnabled}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="4"
                         Maximum="{Binding LayerCount}"
                         Command="{Binding Update}"
@@ -118,7 +118,7 @@
                 <Label Grid.Column="1" Grid.Row="5"
                        Content="{Binding ShiftDx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="5"
                         Maximum="{Binding ImageWidth}"
                         Minimum="{Binding ImageWidth, Converter={StaticResource toNegative}}"
@@ -132,7 +132,7 @@
                 <Label Grid.Column="1" Grid.Row="6"
                        Content="{Binding ShiftDy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="6"
                         Maximum="{Binding ImageHeight}"
                         Minimum="{Binding ImageHeight, Converter={StaticResource toNegative}}"
@@ -146,7 +146,7 @@
                 <Label Grid.Column="1" Grid.Row="7"
                        Content="{Binding ShearBx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7"
                         Maximum="10"
                         Minimum="-10"
@@ -161,7 +161,7 @@
                 <Label Grid.Column="1" Grid.Row="8"
                        Content="{Binding ShearBy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="8"
                         Maximum="10"
                         Minimum="-10"
@@ -176,7 +176,7 @@
                 <Label Grid.Column="1" Grid.Row="9"
                        Content="{Binding ScaleSx}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="9"
                         Maximum="10"
                         Minimum="0"
@@ -191,7 +191,7 @@
                 <Label Grid.Column="1" Grid.Row="10"
                        Content="{Binding ScaleSy}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="10"
                         Maximum="10"
                         Minimum="0"
@@ -206,7 +206,7 @@
                 <Label Grid.Column="1" Grid.Row="11"
                        Content="{Binding RotationAlpha}"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <views:CommandSlider 
+                <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
                         Maximum="3.14159265359"
                         Minimum="-3.14159265359"
@@ -220,38 +220,38 @@
                         Margin="10,10,10,10"
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
-                        Background="AliceBlue" 
-                        IsEnabled="{Binding ProjectEnabled}"/>
+                        Background="AliceBlue"
+                        IsEnabled="{Binding ProjectEnabled}" />
                 <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="12"
                         Content="Clear Marker"
                         Command="{Binding ClearMarker}"
                         Margin="10,10,10,10"
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
-                        Background="AliceBlue"/>
+                        Background="AliceBlue" />
                 <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="13"
                         Content="Reset All"
                         Command="{Binding ResetAll}"
                         Margin="10,10,10,10"
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
-                        Background="AliceBlue"/>
+                        Background="AliceBlue" />
                 <Button Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
                         Content="Map Bilinear"
                         Command="{Binding MapBilinear}"
                         Margin="10,10,10,10"
                         Padding="0,5,0,5"
                         BorderBrush="Gray"
-                        Background="AliceBlue" 
-                        IsEnabled="{Binding ProjectEnabled}"/>
+                        Background="AliceBlue"
+                        IsEnabled="{Binding ProjectEnabled}" />
             </Grid>
             <Button Content="Save Image"
                     Command="{Binding SaveImage}"
                     Margin="10,10,10,10"
                     Padding="0,5,0,5"
                     BorderBrush="Gray"
-                    Background="AliceBlue" 
-                    IsEnabled="{Binding ImageIsOpen}"/>
+                    Background="AliceBlue"
+                    IsEnabled="{Binding ImageIsOpen}" />
         </StackPanel>
     </Grid>
 </Window>
