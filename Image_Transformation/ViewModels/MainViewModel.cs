@@ -14,6 +14,7 @@ namespace Image_Transformation.ViewModels
     public class MainViewModel : INotifyPropertyChanged
     {
         private readonly IImageMatrixBuilder _bitmapBuilder;
+        private bool _asyncEnabled;
         private CancellationTokenSource _cancellationTokenSource;
         private string _fileFormat;
         private WriteableBitmap _image;
@@ -25,7 +26,6 @@ namespace Image_Transformation.ViewModels
         private Quadrilateral _markerQuadrilateral;
         private bool _projectEnabled;
         private ObservableCollection<Point> _quadrilateralPoints;
-        private bool _asyncEnabled;
 
         public MainViewModel(IImageMatrixBuilder bitmapCreatorBuilder)
         {
@@ -449,13 +449,11 @@ namespace Image_Transformation.ViewModels
                           .SetSourceToTargetEnabled(true);
         }
 
-        private void ShowImage()
+        private void SetImagePropertiesInUIThread(ImageMatrix imageMatrix)
         {
-            FileFormat = Path.GetExtension(_bitmapBuilder.Path);
-            ImageMatrix imageMatrix = _bitmapBuilder.Build();
-
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
+                FileFormat = Path.GetExtension(_bitmapBuilder.Path);
                 Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
                 ImageHeight = (int)Image.Height;
                 ImageWidth = (int)Image.Width;
@@ -464,21 +462,19 @@ namespace Image_Transformation.ViewModels
             });
         }
 
+        private void ShowImage()
+        {
+            ImageMatrix imageMatrix = _bitmapBuilder.Build();
+            SetImagePropertiesInUIThread(imageMatrix);
+        }
+
         private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
-            FileFormat = Path.GetExtension(_bitmapBuilder.Path);
             ImageMatrix imageMatrix = await Task.Factory.StartNew(() => _bitmapBuilder.Build());
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                Dispatcher.CurrentDispatcher.Invoke(() =>
-                {
-                    Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
-                    ImageHeight = (int)Image.Height;
-                    ImageWidth = (int)Image.Width;
-                    LayerCount = _bitmapBuilder.LayerCount - 1;
-                    LayerSliderEnabled = LayerCount > 1;
-                });
+                SetImagePropertiesInUIThread(imageMatrix);
             }
         }
 

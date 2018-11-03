@@ -141,19 +141,23 @@
 
         private TransformationMatrix GetTransformationMatrix(ImageMatrix imageMatrix)
         {
-            TransformationMatrix transformationMatrix = TransformationMatrix.
+            if (imageMatrix != null)
+            {
+                TransformationMatrix transformationMatrix = TransformationMatrix.
                             UnitMatrix.
                             Shear(Bx, By).
                             Scale(Sx, Sy).
                             Rotate(Alpha, imageMatrix.Width / 2, imageMatrix.Height / 2).
                             Project(SourceQuadrilateral);
 
-            if (!SourceToTargetEnabled)
-            {
-                transformationMatrix = transformationMatrix.Shift(Dx, Dy);
-            }
+                if (!SourceToTargetEnabled)
+                {
+                    transformationMatrix = transformationMatrix.Shift(Dx, Dy);
+                }
 
-            return transformationMatrix;
+                return transformationMatrix;
+            }
+            return TransformationMatrix.UnitMatrix;
         }
 
         private void SetImageLoader()
