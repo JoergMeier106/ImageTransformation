@@ -111,7 +111,12 @@ namespace Image_Transformation
             {
                 TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
-                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+
+                int z = (int)transformedMatrix[2, 0];
+                int x_ = (int)transformedMatrix[0, 0] / z; 
+                int y_ = (int)transformedMatrix[1, 0] / z;
+
+                return (x_, y_);
             });
         }
 
