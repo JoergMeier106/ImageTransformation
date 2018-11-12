@@ -1,6 +1,6 @@
 ﻿namespace Image_Transformation
 {
-    public class Bitmap3DBuilder : IBitmapBuilder
+    public class Image3DMatrixBuilder : IImageMatrixBuilder
     {
         private readonly BilinearOperation _bilinearOperation;
         private readonly AdjustBrightnessOperation _brightnessOperation;
@@ -8,7 +8,7 @@
         private readonly ShiftingOperation _shiftingOperation;
         private IImageLoader _imageLoader;
 
-        public Bitmap3DBuilder()
+        public Image3DMatrixBuilder()
         {
             _imageMatrixLoader = new ImageMatrixLoader();
             _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
@@ -45,76 +45,76 @@
             return imageMatrix;
         }
 
-        public IBitmapBuilder MapBilinear(Quadrilateral sourceQuadrilateral)
+        public IImageMatrixBuilder MapBilinear(Quadrilateral sourceQuadrilateral)
         {
             _bilinearOperation.Quadrilateral = sourceQuadrilateral;
             return this;
         }
 
-        public IBitmapBuilder Project(Quadrilateral sourceQuadrilateral)
+        public IImageMatrixBuilder Project(Quadrilateral sourceQuadrilateral)
         {
             SourceQuadrilateral = sourceQuadrilateral;
             return this;
         }
 
-        public IBitmapBuilder Rotate(double alpha)
+        public IImageMatrixBuilder Rotate(double alpha)
         {
             Alpha = alpha;
             return this;
         }
 
-        public IBitmapBuilder Scale(double sx, double sy)
+        public IImageMatrixBuilder Scale(double sx, double sy)
         {
             Sx = sx;
             Sy = sy;
             return this;
         }
 
-        public IBitmapBuilder SetBrightness(double brightness)
+        public IImageMatrixBuilder SetBrightness(double brightness)
         {
             _brightnessOperation.BrightnessFactor = brightness;
             _brightnessOperation.UseCustomBrightness = brightness > 0;
             return this;
         }
 
-        public IBitmapBuilder SetLayer(int layer)
+        public IImageMatrixBuilder SetLayer(int layer)
         {
             _imageMatrixLoader.Layer = layer;
             return this;
         }
 
-        public IBitmapBuilder SetPath(string path)
+        public IImageMatrixBuilder SetPath(string path)
         {
             _imageMatrixLoader.Path = path;
             return this;
         }
 
-        public IBitmapBuilder SetSourceToTargetEnabled(bool value)
+        public IImageMatrixBuilder SetSourceToTargetEnabled(bool value)
         {
             SourceToTargetEnabled = value;
             return this;
         }
 
-        public IBitmapBuilder SetTargetImageHeight(int imageHeight)
+        public IImageMatrixBuilder SetTargetImageHeight(int imageHeight)
         {
             TargetImageHeight = imageHeight;
             return this;
         }
 
-        public IBitmapBuilder SetTargetImageWidth(int imageWidth)
+        public IImageMatrixBuilder SetTargetImageWidth(int imageWidth)
         {
             TargetImageWidth = imageWidth;
             return this;
         }
 
-        public IBitmapBuilder Shear(double bx, double by)
+        public IImageMatrixBuilder Shear(double bx, double by)
         {
             Bx = bx;
             By = by;
             return this;
         }
 
-        public IBitmapBuilder Shift(int dx, int dy)
+        public IImageMatrixBuilder Shift(int dx, int dy)
         {
             _shiftingOperation.Dx = dx;
             _shiftingOperation.Dy = dy;

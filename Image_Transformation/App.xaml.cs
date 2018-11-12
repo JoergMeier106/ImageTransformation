@@ -13,11 +13,7 @@ namespace Image_Transformation
         {
             base.OnStartup(e);
 
-            MainWindow = new MainView
-            {
-                DataContext = new MainViewModel()
-            };
-
+            MainWindow = new MainView();
             MainWindow.Show();
         }
     }

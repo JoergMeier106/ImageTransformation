@@ -73,11 +73,11 @@
     </Compile>
     <Compile Include="Converter\ToVisibilityConverter.cs" />
     <Compile Include="Converter\ToNegativeConverter.cs" />
-    <Compile Include="ImageLoader\Bitmap3DBuilder.cs" />
+    <Compile Include="ImageLoader\Image3DMatrixBuilder.cs" />
     <Compile Include="ImageLoader\IImageLoader.cs" />
-    <Compile Include="ImageLoader\IBitmapBuilder.cs" />
+    <Compile Include="ImageLoader\IImageMatrixBuilder.cs" />
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
-    <Compile Include="ImageLoader\Bitmap2DBuilder.cs" />
+    <Compile Include="ImageLoader\Image2DMatrixBuilder.cs" />
     <Compile Include="ImageLoader\JsonParser.cs" />
     <Compile Include="ImageLoader\ImageMatrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
@@ -88,13 +88,20 @@
     <Compile Include="ImageOperations\BilinearOperation.cs" />
     <Compile Include="ImageOperations\ShiftingOperation.cs" />
     <Compile Include="ImageOperations\TransformationMatrix.cs" />
-    <Compile Include="ViewModels\MainViewModel.cs" />
+    <Compile Include="ViewModels\Image3DViewModel.cs" />
+    <Compile Include="ViewModels\Image2DViewModel.cs" />
     <Compile Include="ViewModels\RelayCommand.cs" />
     <Compile Include="Views\CommandSlider.cs" />
+    <Compile Include="Views\Image2DView.xaml.cs">
+      <DependentUpon>Image2DView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\Image3DView.xaml.cs">
+      <DependentUpon>Image3DView.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\ImageHost.cs" />
     <Compile Include="Views\MainView.xaml.cs">
       <DependentUpon>MainView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Views\ImageHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -124,6 +131,14 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Views\Image2DView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\Image3DView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\MainView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

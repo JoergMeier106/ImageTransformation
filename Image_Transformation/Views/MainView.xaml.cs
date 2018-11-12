@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using Image_Transformation.ViewModels;
 using System.Windows;
 
 namespace Image_Transformation.Views
@@ -8,21 +8,33 @@ namespace Image_Transformation.Views
     /// </summary>
     public partial class MainView : Window
     {
-        private static readonly Regex _regex = new Regex("[^0-9.-]+");
-
         public MainView()
         {
             InitializeComponent();
+            double screenWidth = SystemParameters.PrimaryScreenWidth;
+            double screenHeight = SystemParameters.PrimaryScreenHeight;
+            Left = (screenWidth / 2) - (Width / 2);
+            Top = (screenHeight / 2) - (Height / 2);
         }
 
-        private static bool IsTextAllowed(string text)
+        private void On2DButtonClicked(object sender, RoutedEventArgs e)
         {
-            return !_regex.IsMatch(text);
+            Image2DView image2DView = new Image2DView
+            {
+                DataContext = new Image2DViewModel()
+            };
+            image2DView.Show();
+            Close();
         }
 
-        private void TextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void On3DButtonClicked(object sender, RoutedEventArgs e)
         {
-            e.Handled = !IsTextAllowed(e.Text);
+            Image3DView image3DView = new Image3DView
+            {
+                DataContext = new Image3DViewModel()
+            };
+            image3DView.Show();
+            Close();
         }
     }
 }
