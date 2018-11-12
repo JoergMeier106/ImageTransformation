@@ -5,7 +5,7 @@ namespace Image_Transformation
 {
     public static class MatrixToBitmapImageConverter
     {
-        public static WriteableBitmap GetImage(ImageMatrix imageMatrix)
+        public static WriteableBitmap GetImage(Image2DMatrix imageMatrix)
         {
             if (imageMatrix != null)
             {

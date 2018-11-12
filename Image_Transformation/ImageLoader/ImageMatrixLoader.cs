@@ -18,7 +18,7 @@ namespace Image_Transformation
         public string Path { get; set; }
         public int Width { get; private set; }
 
-        public ImageMatrix GetImageMatrix()
+        public Image2DMatrix GetImageMatrix()
         {
             MatrixChanged = false;
             if (_lastPath != Path || _lastLayer != Layer)
@@ -33,7 +33,7 @@ namespace Image_Transformation
                 _imageBytes = GetLayerBytes(rawBytes, Layer, BytePerPixel);
                 LayerCount = rawBytes.Length / (Width * Height * BytePerPixel);
             }
-            return new ImageMatrix(Height, Width, _imageBytes);
+            return new Image2DMatrix(Height, Width, _imageBytes);
         }
 
         private byte[] GetLayerBytes(byte[] rawBytes, int layer, int bytesPerPixel)

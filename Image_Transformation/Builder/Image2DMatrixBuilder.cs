@@ -2,18 +2,18 @@
 {
     public class Image2DMatrixBuilder : IImageMatrixBuilder
     {
-        private readonly BilinearOperation _bilinearOperation;
+        private readonly BilinearTransformation _bilinearOperation;
         private readonly AdjustBrightnessOperation _brightnessOperation;
         private readonly ImageMatrixLoader _imageMatrixLoader;
-        private readonly ShiftingOperation _shiftingOperation;
+        private readonly Shifting2DTransformation _shiftingOperation;
         private IImageLoader _imageLoader;
 
         public Image2DMatrixBuilder()
         {
             _imageMatrixLoader = new ImageMatrixLoader();
             _brightnessOperation = new AdjustBrightnessOperation(_imageMatrixLoader);
-            _bilinearOperation = new BilinearOperation(_brightnessOperation);
-            _shiftingOperation = new ShiftingOperation(_bilinearOperation);
+            _bilinearOperation = new BilinearTransformation(_brightnessOperation);
+            _shiftingOperation = new Shifting2DTransformation(_bilinearOperation);
 
             SetImageLoader();
         }
@@ -34,12 +34,12 @@
         public int TargetImageHeight { get; private set; }
         public int TargetImageWidth { get; private set; }
 
-        public ImageMatrix Build()
+        public Image2DMatrix Build()
         {
             SetImageLoader();
 
-            ImageMatrix imageMatrix = _imageLoader.GetImageMatrix();
-            TransformationMatrix transformationMatrix = GetTransformationMatrix(imageMatrix);
+            Image2DMatrix imageMatrix = _imageLoader.GetImageMatrix();
+            Transformation2DMatrix transformationMatrix = GetTransformationMatrix(imageMatrix);
             imageMatrix = ApplyTransformationMatrix(imageMatrix, transformationMatrix);
 
             return imageMatrix;
@@ -121,29 +121,29 @@
             return this;
         }
 
-        private ImageMatrix ApplyTransformationMatrix(ImageMatrix imageMatrix, TransformationMatrix transformationMatrix)
+        private Image2DMatrix ApplyTransformationMatrix(Image2DMatrix imageMatrix, Transformation2DMatrix transformationMatrix)
         {
-            if (transformationMatrix != TransformationMatrix.UnitMatrix)
+            if (transformationMatrix != Transformation2DMatrix.UnitMatrix)
             {
                 if (SourceToTargetEnabled)
                 {
-                    imageMatrix = ImageMatrix.Transform(imageMatrix, transformationMatrix);
+                    imageMatrix = Image2DMatrix.Transform(imageMatrix, transformationMatrix);
                 }
                 else
                 {
-                    ImageMatrix targetMatrix = new ImageMatrix(TargetImageHeight, TargetImageWidth, imageMatrix.BytePerPixel);
-                    imageMatrix = ImageMatrix.TransformTargetToSource(imageMatrix, targetMatrix, transformationMatrix.Invert());
+                    Image2DMatrix targetMatrix = new Image2DMatrix(TargetImageHeight, TargetImageWidth, imageMatrix.BytePerPixel);
+                    imageMatrix = Image2DMatrix.TransformTargetToSource(imageMatrix, targetMatrix, transformationMatrix.Invert());
                 }
             }
 
             return imageMatrix;
         }
 
-        private TransformationMatrix GetTransformationMatrix(ImageMatrix imageMatrix)
+        private Transformation2DMatrix GetTransformationMatrix(Image2DMatrix imageMatrix)
         {
             if (imageMatrix != null)
             {
-                TransformationMatrix transformationMatrix = TransformationMatrix.
+                Transformation2DMatrix transformationMatrix = Transformation2DMatrix.
                             UnitMatrix.
                             Shear(Bx, By).
                             Scale(Sx, Sy).
@@ -157,7 +157,7 @@
 
                 return transformationMatrix;
             }
-            return TransformationMatrix.UnitMatrix;
+            return Transformation2DMatrix.UnitMatrix;
         }
 
         private void SetImageLoader()

@@ -8,6 +8,35 @@ namespace Image_Transformation
     {
         public Quadrilateral(IEnumerable<Point> points)
         {
+            SetProperties(points);
+        }
+
+        public Point Point0 { get; private set; }
+
+        public Point Point1 { get; private set; }
+
+        public Point Point2 { get; private set; }
+
+        public Point Point3 { get; private set; }
+
+        public double X0 { get; private set; }
+
+        public double X1 { get; private set; }
+
+        public double X2 { get; private set; }
+
+        public double X3 { get; private set; }
+
+        public double Y0 { get; private set; }
+
+        public double Y1 { get; private set; }
+
+        public double Y2 { get; private set; }
+
+        public double Y3 { get; private set; }
+
+        private void SetProperties(IEnumerable<Point> points)
+        {
             if (points != null && points.Count() == 4)
             {
                 IEnumerable<Point> yOrderedPoints = points.OrderBy((point) => point.Y);
@@ -33,19 +62,5 @@ namespace Image_Transformation
                 Y3 = Point3.Y;
             }
         }
-
-        public Point Point0 { get; }
-        public Point Point1 { get; }
-        public Point Point2 { get; }
-        public Point Point3 { get; }
-        public double X0 { get; }
-        public double X1 { get; }
-        public double X2 { get; }
-        public double X3 { get; }
-
-        public double Y0 { get; }
-        public double Y1 { get; }
-        public double Y2 { get; }
-        public double Y3 { get; }
     }
 }

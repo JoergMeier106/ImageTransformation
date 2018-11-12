@@ -5,11 +5,11 @@ using System.Windows;
 
 namespace Image_Transformation
 {
-    public class BilinearOperation : IImageOperation
+    public class BilinearTransformation : IImageOperation
     {
         private readonly IImageLoader _imageLoader;
 
-        public BilinearOperation(IImageLoader imageLoader)
+        public BilinearTransformation(IImageLoader imageLoader)
         {
             _imageLoader = imageLoader;
         }
@@ -19,9 +19,9 @@ namespace Image_Transformation
         public bool MatrixChanged => _imageLoader.MatrixChanged;
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
 
-        public ImageMatrix GetImageMatrix()
+        public Image2DMatrix GetImageMatrix()
         {
-            ImageMatrix sourceMatrix = _imageLoader.GetImageMatrix();
+            Image2DMatrix sourceMatrix = _imageLoader.GetImageMatrix();
 
             if (Quadrilateral != null)
             {
@@ -80,7 +80,7 @@ namespace Image_Transformation
                 double b2 = b[2];
                 double b3 = b[3];
 
-                return ImageMatrix.Transform(sourceMatrix, (x, y) =>
+                return Image2DMatrix.Transform(sourceMatrix, (x, y) =>
                 {
                     x = (int)(a0 * x + a1 * y + a2 * x * y + a3);
                     y = (int)(b0 * x + b1 * y + b2 * x * y + b3);

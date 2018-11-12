@@ -4,9 +4,9 @@ using System.Windows;
 
 namespace Image_Transformation
 {
-    public struct TransformationMatrix
+    public struct Transformation2DMatrix
     {
-        public static readonly TransformationMatrix UnitMatrix = new TransformationMatrix(new double[,]
+        public static readonly Transformation2DMatrix UnitMatrix = new Transformation2DMatrix(new double[,]
         {
             { 1, 0, 0 },
             { 0, 1, 0 },
@@ -15,14 +15,14 @@ namespace Image_Transformation
 
         private readonly double[,] _matrix;
 
-        public TransformationMatrix(double[,] matrix)
+        public Transformation2DMatrix(double[,] matrix)
         {
             Height = matrix.GetLength(0);
             Width = matrix.GetLength(1);
             _matrix = matrix;
         }
 
-        public TransformationMatrix(int height, int width)
+        public Transformation2DMatrix(int height, int width)
         {
             Height = height;
             Width = width;
@@ -38,7 +38,7 @@ namespace Image_Transformation
             private set { _matrix[y, x] = value; }
         }
 
-        public static TransformationMatrix GetProjectionTransformationFromUnitSquare(Quadrilateral quadrilateral)
+        public static Transformation2DMatrix GetProjectionTransformationFromUnitSquare(Quadrilateral quadrilateral)
         {
             double a00 = GetA00(quadrilateral);
             double a01 = GetA01(quadrilateral);
@@ -49,7 +49,7 @@ namespace Image_Transformation
             double a20 = GetA20(quadrilateral);
             double a21 = GetA21(quadrilateral);
 
-            return new TransformationMatrix(new double[,]
+            return new Transformation2DMatrix(new double[,]
             {
                 { a00, a01, a02 },
                 { a10, a11, a12 },
@@ -57,19 +57,19 @@ namespace Image_Transformation
             });
         }
 
-        public static bool operator !=(TransformationMatrix matrix1, TransformationMatrix matrix2)
+        public static bool operator !=(Transformation2DMatrix matrix1, Transformation2DMatrix matrix2)
         {
             return !(matrix1 == matrix2);
         }
 
-        public static TransformationMatrix operator *(TransformationMatrix leftMatrix, TransformationMatrix rightMatrix)
+        public static Transformation2DMatrix operator *(Transformation2DMatrix leftMatrix, Transformation2DMatrix rightMatrix)
         {
             if (leftMatrix.Width != rightMatrix.Height)
             {
                 throw new InvalidOperationException("The row count of the left matrix and the column count of the right matrix must be equal!");
             }
 
-            TransformationMatrix matrix = new TransformationMatrix(leftMatrix.Height, rightMatrix.Width);
+            Transformation2DMatrix matrix = new Transformation2DMatrix(leftMatrix.Height, rightMatrix.Width);
 
             for (int i = 0; i < leftMatrix.Height; i++)
             {
@@ -86,14 +86,14 @@ namespace Image_Transformation
             return matrix;
         }
 
-        public static bool operator ==(TransformationMatrix matrix1, TransformationMatrix matrix2)
+        public static bool operator ==(Transformation2DMatrix matrix1, Transformation2DMatrix matrix2)
         {
-            return EqualityComparer<TransformationMatrix>.Default.Equals(matrix1, matrix2);
+            return EqualityComparer<Transformation2DMatrix>.Default.Equals(matrix1, matrix2);
         }
 
         public override bool Equals(object obj)
         {
-            if (obj is TransformationMatrix matrix)
+            if (obj is Transformation2DMatrix matrix)
             {
                 return MatrixContentIsEqual(matrix);
             }
@@ -109,9 +109,9 @@ namespace Image_Transformation
             return hashCode;
         }
 
-        public static TransformationMatrix Map(TransformationMatrix sourceMatrix, Func<double, double> action)
+        public static Transformation2DMatrix Map(Transformation2DMatrix sourceMatrix, Func<double, double> action)
         {
-            TransformationMatrix targetMatrix = new TransformationMatrix(sourceMatrix.Height, sourceMatrix.Width);
+            Transformation2DMatrix targetMatrix = new Transformation2DMatrix(sourceMatrix.Height, sourceMatrix.Width);
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
                 for (int x = 0; x < sourceMatrix.Width; x++)
@@ -122,12 +122,12 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static TransformationMatrix operator *(TransformationMatrix matrix, double value)
+        public static Transformation2DMatrix operator *(Transformation2DMatrix matrix, double value)
         {
             return Map(matrix, (sourceValue) => sourceValue * value);
         }
 
-        public TransformationMatrix Invert()
+        public Transformation2DMatrix Invert()
         {
             double a00 = this[0, 0];
             double a01 = this[0, 1];
@@ -141,14 +141,14 @@ namespace Image_Transformation
 
             double determinant = GetDeterminant();
 
-            TransformationMatrix adjugateMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix adjugateMatrix = new Transformation2DMatrix(new double[,]
             {
                 { a11*a22-a12*a21, a02*a21-a01*a22, a01*a12-a02*a11 },
                 { a12*a20-a10*a22, a00*a22-a02*a20, a02*a10-a00*a12 },
                 { a10*a21-a11*a20, a01*a20-a00*a21, a00*a11-a01*a10 },
             });
 
-            TransformationMatrix inversedMatrix = adjugateMatrix * (1 / determinant);
+            Transformation2DMatrix inversedMatrix = adjugateMatrix * (1 / determinant);
 
             return inversedMatrix;
         }
@@ -168,21 +168,21 @@ namespace Image_Transformation
             return a00 * a11 * a22 + a01 * a12 * a20 + a02 * a10 * a21 - a00 * a12 * a21 - a01 * a10 * a22 - a02 * a11 * a20;
         }
 
-        public TransformationMatrix Rotate(double alpha, int xc, int yc)
+        public Transformation2DMatrix Rotate(double alpha, int xc, int yc)
         {
-            TransformationMatrix shiftToOriginMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix shiftToOriginMatrix = new Transformation2DMatrix(new double[,]
             {
                 { 1, 0,  xc },
                 { 0, 1,  yc },
                 { 0, 0,  1  },
             });
-            TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix rotationMatrix = new Transformation2DMatrix(new double[,]
             {
                 { Math.Cos(alpha), -Math.Sin(alpha),  0 },
                 { Math.Sin(alpha),  Math.Cos(alpha),  0 },
                 { 0,                0,                1 }
             });
-            TransformationMatrix shiftBackMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix shiftBackMatrix = new Transformation2DMatrix(new double[,]
             {
                 { 1, 0,  -xc },
                 { 0, 1,  -yc },
@@ -191,9 +191,9 @@ namespace Image_Transformation
             return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
         }
 
-        public TransformationMatrix Scale(double sx, double sy)
+        public Transformation2DMatrix Scale(double sx, double sy)
         {
-            TransformationMatrix scalingMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix scalingMatrix = new Transformation2DMatrix(new double[,]
             {
                 { sx, 0,  0 },
                 { 0,  sy, 0 },
@@ -202,9 +202,9 @@ namespace Image_Transformation
             return this * scalingMatrix;
         }
 
-        public TransformationMatrix Shear(double bx, double by)
+        public Transformation2DMatrix Shear(double bx, double by)
         {
-            TransformationMatrix shearingMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix shearingMatrix = new Transformation2DMatrix(new double[,]
             {
                 { 1,  bx, 0 },
                 { by, 1,  0 },
@@ -213,9 +213,9 @@ namespace Image_Transformation
             return this * shearingMatrix;
         }
 
-        public TransformationMatrix Shift(int dx, int dy)
+        public Transformation2DMatrix Shift(int dx, int dy)
         {
-            TransformationMatrix shiftingMatrix = new TransformationMatrix(new double[,]
+            Transformation2DMatrix shiftingMatrix = new Transformation2DMatrix(new double[,]
             {
                 { 1, 0, dx },
                 { 0, 1, dy },
@@ -298,7 +298,7 @@ namespace Image_Transformation
                            ((x1 - x2) * (y3 - y2) - (x3 - x2) * (y1 - y2));
         }
 
-        public TransformationMatrix Project(Quadrilateral sourceQuadrilateral)
+        public Transformation2DMatrix Project(Quadrilateral sourceQuadrilateral)
         {
             if (sourceQuadrilateral != null)
             {
@@ -315,18 +315,18 @@ namespace Image_Transformation
                     new Point(targetWidth, targetHeight)
                 });
 
-                TransformationMatrix unitSquareToSourceTransformation = GetProjectionTransformationFromUnitSquare(sourceQuadrilateral);
-                TransformationMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert();
+                Transformation2DMatrix unitSquareToSourceTransformation = GetProjectionTransformationFromUnitSquare(sourceQuadrilateral);
+                Transformation2DMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert();
 
-                TransformationMatrix unitSquareToTargetTransformation = GetProjectionTransformationFromUnitSquare(targetQuadrilateral);
+                Transformation2DMatrix unitSquareToTargetTransformation = GetProjectionTransformationFromUnitSquare(targetQuadrilateral);
 
-                TransformationMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
+                Transformation2DMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
                 return this * projectiveMapping;
             }
             return this;
         }
 
-        private bool MatrixContentIsEqual(TransformationMatrix matrix)
+        private bool MatrixContentIsEqual(Transformation2DMatrix matrix)
         {
             if (Height != matrix.Height || Width != matrix.Width)
             {

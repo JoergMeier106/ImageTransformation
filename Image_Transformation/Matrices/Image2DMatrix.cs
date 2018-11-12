@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Image_Transformation
 {
-    public class ImageMatrix
+    public class Image2DMatrix
     {
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
@@ -15,7 +15,7 @@ namespace Image_Transformation
 
         private CancellationTokenSource _tokenSource;
 
-        public ImageMatrix(int height, int width, byte[] bytes)
+        public Image2DMatrix(int height, int width, byte[] bytes)
         {
             Height = height;
             Width = width;
@@ -26,7 +26,7 @@ namespace Image_Transformation
             CreateMatrix(bytes);
         }
 
-        public ImageMatrix(int height, int width, int bytePerPixel)
+        public Image2DMatrix(int height, int width, int bytePerPixel)
         {
             Height = height;
             Width = width;
@@ -46,7 +46,7 @@ namespace Image_Transformation
             set { _matrix[y, x] = value; }
         }
 
-        public static ImageMatrix Map(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<ushort, ushort> action)
+        public static Image2DMatrix Map(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<ushort, ushort> action)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -58,7 +58,7 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static ImageMatrix Map(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, ushort> action)
+        public static Image2DMatrix Map(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<int, int, ushort> action)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -70,17 +70,17 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static ImageMatrix operator *(ImageMatrix matrix, double value)
+        public static Image2DMatrix operator *(Image2DMatrix matrix, double value)
         {
             return Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
         }
 
-        public static ImageMatrix operator /(ImageMatrix matrix, double value)
+        public static Image2DMatrix operator /(Image2DMatrix matrix, double value)
         {
             return Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue / value)));
         }
 
-        public static ImageMatrix operator +(ImageMatrix matrix, double value)
+        public static Image2DMatrix operator +(Image2DMatrix matrix, double value)
         {
             return Map(matrix, matrix, ((sourceValue) => (ushort)(sourceValue + value)));
         }
@@ -90,7 +90,7 @@ namespace Image_Transformation
             return y >= 0 && y < height && x >= 0 && x < width;
         }
 
-        public static ImageMatrix Transform(ImageMatrix sourceMatrix, Func<int, int, (int x, int y)> transformFunction)
+        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
             Dictionary<(int x, int y), ushort> transformedPoints = new Dictionary<(int x, int y), ushort>();
 
@@ -108,12 +108,12 @@ namespace Image_Transformation
             return CreateNewSizedMatrix(transformedPoints, sourceMatrix.BytePerPixel);
         }
 
-        public static ImageMatrix Transform(ImageMatrix sourceMatrix, TransformationMatrix transformationMatrix)
+        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Transformation2DMatrix transformationMatrix)
         {
             return Transform(sourceMatrix, (x, y) =>
             {
-                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
-                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                Transformation2DMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                Transformation2DMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
 
                 double z = transformedMatrix[2, 0];
                 double x_ = transformedMatrix[0, 0] / z;
@@ -122,12 +122,12 @@ namespace Image_Transformation
             });
         }
 
-        public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix imageMatrix, TransformationMatrix transformationMatrix)
+        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Image2DMatrix imageMatrix, Transformation2DMatrix transformationMatrix)
         {
             return Transform(sourceMatrix, imageMatrix, (x, y) =>
             {
-                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
-                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                Transformation2DMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                Transformation2DMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
 
                 double z = transformedMatrix[2, 0];
                 double x_ = transformedMatrix[0, 0] / z;
@@ -137,7 +137,7 @@ namespace Image_Transformation
             });
         }
 
-        public static ImageMatrix Transform(ImageMatrix sourceMatrix, ImageMatrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
+        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<int, int, (int x, int y)> transformFunction)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
             {
@@ -155,13 +155,13 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix imageMatrix,
-                            TransformationMatrix transformationMatrix)
+        public static Image2DMatrix TransformTargetToSource(Image2DMatrix sourceMatrix, Image2DMatrix imageMatrix,
+                            Transformation2DMatrix transformationMatrix)
         {
             return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y) =>
             {
-                TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
-                TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
+                Transformation2DMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
+                Transformation2DMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
 
                 double z = transformedMatrix[2, 0];
                 double x_ = transformedMatrix[0, 0] / z;
@@ -171,7 +171,7 @@ namespace Image_Transformation
             });
         }
 
-        public static ImageMatrix TransformTargetToSource(ImageMatrix sourceMatrix, ImageMatrix targetMatrix,
+        public static Image2DMatrix TransformTargetToSource(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix,
             Func<int, int, (int x, int y)> transformFunction)
         {
             sourceMatrix.CancelParallelTransformation();
@@ -230,9 +230,9 @@ namespace Image_Transformation
             return bytes;
         }
 
-        public ImageMatrix Rotate(double alpha)
+        public Image2DMatrix Rotate(double alpha)
         {
-            ImageMatrix rotatedMatrix = Transform(this, new ImageMatrix(Height, Width, BytePerPixel), (x, y) =>
+            Image2DMatrix rotatedMatrix = Transform(this, new Image2DMatrix(Height, Width, BytePerPixel), (x, y) =>
             {
                 int xc = Width / 2;
                 int yc = Height / 2;
@@ -245,9 +245,9 @@ namespace Image_Transformation
             return rotatedMatrix;
         }
 
-        public ImageMatrix Scale(int sx, int sy)
+        public Image2DMatrix Scale(int sx, int sy)
         {
-            ImageMatrix scaledMatrix = Transform(this, new ImageMatrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
+            Image2DMatrix scaledMatrix = Transform(this, new Image2DMatrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
             {
                 x = x * sx;
                 y = y * sy;
@@ -256,9 +256,9 @@ namespace Image_Transformation
             return scaledMatrix;
         }
 
-        public ImageMatrix Shear(int bx, int by)
+        public Image2DMatrix Shear(int bx, int by)
         {
-            ImageMatrix shearedMatrix = Transform(this, new ImageMatrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
+            Image2DMatrix shearedMatrix = Transform(this, new Image2DMatrix(Height, Width, new byte[Height * Width * 2]), (x, y) =>
             {
                 x = x + bx * y;
                 y = y + by * x;
@@ -268,9 +268,9 @@ namespace Image_Transformation
             return shearedMatrix;
         }
 
-        public ImageMatrix Shift(int dx, int dy)
+        public Image2DMatrix Shift(int dx, int dy)
         {
-            return Transform(this, new ImageMatrix(Height, Width, BytePerPixel), (x, y) =>
+            return Transform(this, new Image2DMatrix(Height, Width, BytePerPixel), (x, y) =>
             {
                 x = x + dx;
                 y = y + dy;
@@ -278,9 +278,9 @@ namespace Image_Transformation
             });
         }
 
-        private static TransformationMatrix ConvertToHomogeneousMatrix(int x, int y)
+        private static Transformation2DMatrix ConvertToHomogeneousMatrix(int x, int y)
         {
-            return new TransformationMatrix(new double[,]
+            return new Transformation2DMatrix(new double[,]
             {
                 { x },
                 { y },
@@ -288,7 +288,7 @@ namespace Image_Transformation
             });
         }
 
-        private static ImageMatrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints, int bytePerPixel)
+        private static Image2DMatrix CreateNewSizedMatrix(Dictionary<(int x, int y), ushort> transformedPoints, int bytePerPixel)
         {
             int smallestX = transformedPoints.Select(point => point.Key.x).Min();
             int smallestY = transformedPoints.Select(point => point.Key.y).Min();
@@ -299,7 +299,7 @@ namespace Image_Transformation
             int newHeight = Math.Min(Math.Abs(biggestY) + Math.Abs(smallestY) + 1, MAX_HEIGHT);
             int newWidth = Math.Min(Math.Abs(biggestX) + Math.Abs(smallestX) + 1, MAX_WIDTH);
 
-            ImageMatrix transformedMatrix = new ImageMatrix(newHeight, newWidth, new byte[newHeight * newWidth * bytePerPixel]);
+            Image2DMatrix transformedMatrix = new Image2DMatrix(newHeight, newWidth, new byte[newHeight * newWidth * bytePerPixel]);
 
             foreach (var (x, y) in transformedPoints.Keys)
             {
@@ -315,7 +315,7 @@ namespace Image_Transformation
             return transformedMatrix;
         }
 
-        private static ParallelOptions CreateParallelOptions(ImageMatrix matrix)
+        private static ParallelOptions CreateParallelOptions(Image2DMatrix matrix)
         {
             return new ParallelOptions
             {

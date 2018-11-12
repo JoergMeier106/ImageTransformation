@@ -478,7 +478,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        private void SetImagePropertiesInUIThread(ImageMatrix imageMatrix)
+        private void SetImagePropertiesInUIThread(Image2DMatrix imageMatrix)
         {
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
@@ -493,13 +493,13 @@ namespace Image_Transformation.ViewModels
 
         private void ShowImage()
         {
-            ImageMatrix imageMatrix = _activeImageMatrixBuilder.Build();
+            Image2DMatrix imageMatrix = _activeImageMatrixBuilder.Build();
             SetImagePropertiesInUIThread(imageMatrix);
         }
 
         private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
-            ImageMatrix imageMatrix = await Task.Factory.StartNew(() => _activeImageMatrixBuilder.Build());
+            Image2DMatrix imageMatrix = await Task.Factory.StartNew(() => _activeImageMatrixBuilder.Build());
 
             if (!cancellationToken.IsCancellationRequested)
             {

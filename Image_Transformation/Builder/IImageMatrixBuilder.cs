@@ -18,7 +18,7 @@
         int TargetImageWidth { get; }
         bool SourceToTargetEnabled { get; }
 
-        ImageMatrix Build();
+        Image2DMatrix Build();
 
         IImageMatrixBuilder MapBilinear(Quadrilateral sourceQuadrilateral);
 
