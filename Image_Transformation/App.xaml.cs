@@ -15,7 +15,7 @@ namespace Image_Transformation
 
             MainWindow = new MainView
             {
-                DataContext = new MainViewModel(new ImageMatrixBuilder())
+                DataContext = new MainViewModel()
             };
 
             MainWindow.Show();

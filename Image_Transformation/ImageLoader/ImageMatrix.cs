@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ namespace Image_Transformation
 {
     public class ImageMatrix
     {
+        private const int MAX_HEIGHT = 8192;
+        private const int MAX_WIDTH = 8192;
         private readonly ushort[,] _matrix;
 
         private CancellationTokenSource _tokenSource;
@@ -112,11 +115,10 @@ namespace Image_Transformation
                 TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
 
-                int z = (int)transformedMatrix[2, 0];
-                int x_ = (int)transformedMatrix[0, 0] / z; 
-                int y_ = (int)transformedMatrix[1, 0] / z;
-
-                return (x_, y_);
+                double z = transformedMatrix[2, 0];
+                double x_ = transformedMatrix[0, 0] / z;
+                double y_ = transformedMatrix[1, 0] / z;
+                return ((int)x_, (int)y_);
             });
         }
 
@@ -126,7 +128,12 @@ namespace Image_Transformation
             {
                 TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
-                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+
+                double z = transformedMatrix[2, 0];
+                double x_ = transformedMatrix[0, 0] / z;
+                double y_ = transformedMatrix[1, 0] / z;
+
+                return ((int)x_, (int)y_);
             });
         }
 
@@ -155,7 +162,12 @@ namespace Image_Transformation
             {
                 TransformationMatrix homogeneousMatrix = ConvertToHomogeneousMatrix(x, y);
                 TransformationMatrix transformedMatrix = transformationMatrix * homogeneousMatrix;
-                return ((int)transformedMatrix[0, 0], (int)transformedMatrix[1, 0]);
+
+                double z = transformedMatrix[2, 0];
+                double x_ = transformedMatrix[0, 0] / z;
+                double y_ = transformedMatrix[1, 0] / z;
+
+                return ((int)x_, (int)y_);
             });
         }
 
@@ -284,14 +296,20 @@ namespace Image_Transformation
             int biggestX = transformedPoints.Select(point => point.Key.x).Max();
             int biggestY = transformedPoints.Select(point => point.Key.y).Max();
 
-            int newHeight = Math.Abs(biggestY) + Math.Abs(smallestY) + 1;
-            int newWidth = Math.Abs(biggestX) + Math.Abs(smallestX) + 1;
+            int newHeight = Math.Min(Math.Abs(biggestY) + Math.Abs(smallestY) + 1, MAX_HEIGHT);
+            int newWidth = Math.Min(Math.Abs(biggestX) + Math.Abs(smallestX) + 1, MAX_WIDTH);
 
             ImageMatrix transformedMatrix = new ImageMatrix(newHeight, newWidth, new byte[newHeight * newWidth * bytePerPixel]);
 
             foreach (var (x, y) in transformedPoints.Keys)
             {
-                transformedMatrix[y + Math.Abs(smallestY), x + Math.Abs(smallestX)] = transformedPoints[(x, y)];
+                int shiftedX = x + Math.Abs(smallestX);
+                int shiftedY = y + Math.Abs(smallestY);
+
+                if (PointIsInBounds(shiftedX, shiftedY, newHeight, newWidth))
+                {
+                    transformedMatrix[shiftedY, shiftedX] = transformedPoints[(x, y)];
+                }
             }
 
             return transformedMatrix;

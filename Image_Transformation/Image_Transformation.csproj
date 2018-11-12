@@ -73,10 +73,11 @@
     </Compile>
     <Compile Include="Converter\ToVisibilityConverter.cs" />
     <Compile Include="Converter\ToNegativeConverter.cs" />
+    <Compile Include="ImageLoader\Bitmap3DBuilder.cs" />
     <Compile Include="ImageLoader\IImageLoader.cs" />
-    <Compile Include="ImageLoader\IImageMatrixBuilder.cs" />
+    <Compile Include="ImageLoader\IBitmapBuilder.cs" />
     <Compile Include="ImageLoader\ImageMatrixLoader.cs" />
-    <Compile Include="ImageLoader\ImageMatrixBuilder.cs" />
+    <Compile Include="ImageLoader\Bitmap2DBuilder.cs" />
     <Compile Include="ImageLoader\JsonParser.cs" />
     <Compile Include="ImageLoader\ImageMatrix.cs" />
     <Compile Include="Converter\MatrixToBitmapImageConverter.cs" />
