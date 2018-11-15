@@ -1,5 +1,4 @@
-﻿using Image_Transformation.ViewModels;
-using Image_Transformation.Views;
+﻿using Image_Transformation.Views;
 using System.Windows;
 
 namespace Image_Transformation

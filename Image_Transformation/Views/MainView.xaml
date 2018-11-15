@@ -7,26 +7,26 @@
         Title="MainView" MaxHeight="237" MaxWidth="543" MinHeight="237" MinWidth="543" Height="237" Width="543">
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="245*"/>
-            <ColumnDefinition Width="23*"/>
-            <ColumnDefinition Width="268*"/>
+            <ColumnDefinition Width="245*" />
+            <ColumnDefinition Width="23*" />
+            <ColumnDefinition Width="268*" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="1*"/>
-            <RowDefinition Height="3*"/>
+            <RowDefinition Height="1*" />
+            <RowDefinition Height="3*" />
         </Grid.RowDefinitions>
         <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3"
                Content="Open Image in 3D or 2D?"
                FontSize="30"
                HorizontalContentAlignment="Center"
-               Background="AliceBlue"/>
+               Background="AliceBlue" />
         <Button Grid.Row="1" Grid.Column="0"
                 Content="2D"
                 FontSize="60"
                 Margin="20,10,20,10.333"
                 Padding="0,5,0,5"
                 BorderBrush="Gray"
-                Background="AliceBlue" Grid.ColumnSpan="2" 
+                Background="AliceBlue" Grid.ColumnSpan="2"
                 Click="On2DButtonClicked" />
         <Button Grid.Row="1" Grid.Column="2"
                 Content="3D"
@@ -34,7 +34,7 @@
                 Margin="20,10,20,10.333"
                 Padding="0,5,0,5"
                 BorderBrush="Gray"
-                Background="AliceBlue" 
+                Background="AliceBlue"
                 Click="On3DButtonClicked" />
     </Grid>
 </Window>

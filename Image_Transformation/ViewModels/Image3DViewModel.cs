@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
@@ -13,13 +14,11 @@ namespace Image_Transformation.ViewModels
 {
     public class Image3DViewModel : INotifyPropertyChanged
     {
-        private readonly Image2DMatrixBuilder _image2DMatrixBuilder;
         private readonly Image3DMatrixBuilder _image3DMatrixBuilder;
-        private IImageMatrixBuilder _activeImageMatrixBuilder;
         private bool _asyncEnabled;
         private CancellationTokenSource _cancellationTokenSource;
         private string _fileFormat;
-        private WriteableBitmap _image;
+        private List<WriteableBitmap> _images;
         private int _imageHeight;
         private bool _imageIsOpen;
         private int _imageWidth;
@@ -32,9 +31,7 @@ namespace Image_Transformation.ViewModels
 
         public Image3DViewModel()
         {
-            _image2DMatrixBuilder = new Image2DMatrixBuilder();
             _image3DMatrixBuilder = new Image3DMatrixBuilder();
-            _activeImageMatrixBuilder = _image2DMatrixBuilder;
 
             QuadrilateralPoints = new ObservableCollection<Point>();
             _cancellationTokenSource = new CancellationTokenSource();
@@ -56,40 +53,12 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Brightness;
+                return _image3DMatrixBuilder.Brightness;
             }
             set
             {
-                _activeImageMatrixBuilder.SetBrightness(value);
+                _image3DMatrixBuilder.SetBrightness(value);
                 RaisePropertyChanged(nameof(Brightness));
-            }
-        }
-
-        public ICommand ClearMarker
-        {
-            get
-            {
-                return new RelayCommand(async (args) =>
-                {
-                    MarkerQuadrilateral = null;
-                    _activeImageMatrixBuilder.MapBilinear(null);
-                    QuadrilateralPoints = new ObservableCollection<Point>();
-                    _activeImageMatrixBuilder.Project(MarkerQuadrilateral);
-                    await UpdateImage();
-                });
-            }
-        }
-
-        public int CurrentLayer
-        {
-            get
-            {
-                return _activeImageMatrixBuilder.Layer;
-            }
-            set
-            {
-                _activeImageMatrixBuilder.SetLayer(value);
-                RaisePropertyChanged(nameof(CurrentLayer));
             }
         }
 
@@ -106,16 +75,16 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public WriteableBitmap Image
+        public List<WriteableBitmap> Images
         {
             get
             {
-                return _image;
+                return _images;
             }
             set
             {
-                _image = value;
-                RaisePropertyChanged(nameof(Image));
+                _images = value;
+                RaisePropertyChanged(nameof(Images));
             }
         }
 
@@ -128,7 +97,6 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _imageHeight = value;
-                _activeImageMatrixBuilder.SetTargetImageHeight(_imageHeight);
                 RaisePropertyChanged(nameof(ImageHeight));
             }
         }
@@ -155,7 +123,6 @@ namespace Image_Transformation.ViewModels
             set
             {
                 _imageWidth = value;
-                _activeImageMatrixBuilder.SetTargetImageWidth(_imageWidth);
                 RaisePropertyChanged(nameof(ImageWidth));
             }
         }
@@ -196,20 +163,6 @@ namespace Image_Transformation.ViewModels
             }
         }
 
-        public ICommand MapBilinear
-        {
-            get
-            {
-                return new RelayCommand(async (args) =>
-                {
-                    _activeImageMatrixBuilder.MapBilinear(_markerQuadrilateral);
-                    MarkerQuadrilateral = null;
-                    QuadrilateralPoints = new ObservableCollection<Point>();
-                    await UpdateImage();
-                });
-            }
-        }
-
         public Quadrilateral MarkerQuadrilateral
         {
             get
@@ -240,24 +193,10 @@ namespace Image_Transformation.ViewModels
                     {
                         ResetValues();
 
-                        _activeImageMatrixBuilder.SetPath(openFileDialog.FileName);
+                        _image3DMatrixBuilder.SetPath(openFileDialog.FileName);
                         ImageIsOpen = true;
                         await UpdateImage();
                     }
-                });
-            }
-        }
-
-        public ICommand Project
-        {
-            get
-            {
-                return new RelayCommand(async (args) =>
-                {
-                    _activeImageMatrixBuilder.Project(_markerQuadrilateral);
-                    MarkerQuadrilateral = null;
-                    QuadrilateralPoints = new ObservableCollection<Point>();
-                    await UpdateImage();
                 });
             }
         }
@@ -303,37 +242,12 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Alpha;
+                return _image3DMatrixBuilder.Alpha;
             }
             set
             {
-                _activeImageMatrixBuilder.Rotate(value);
+                _image3DMatrixBuilder.Rotate(value);
                 RaisePropertyChanged(nameof(RotationAlpha));
-            }
-        }
-
-        public ICommand SaveImage
-        {
-            get
-            {
-                return new RelayCommand((args) =>
-                {
-                    OpenFileDialog saveFileDialog = new OpenFileDialog
-                    {
-                        Filter = " PNG (*.png)|*.png",
-                        CheckFileExists = false
-                    };
-
-                    if (saveFileDialog.ShowDialog() == true)
-                    {
-                        using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
-                        {
-                            BitmapEncoder encoder = new PngBitmapEncoder();
-                            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)Image));
-                            encoder.Save(fileStream);
-                        }
-                    }
-                });
             }
         }
 
@@ -341,11 +255,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Sx;
+                return _image3DMatrixBuilder.Sx;
             }
             set
             {
-                _activeImageMatrixBuilder.Scale(value, ScaleSy);
+                _image3DMatrixBuilder.Scale(value, ScaleSy);
                 RaisePropertyChanged(nameof(ScaleSx));
             }
         }
@@ -354,11 +268,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Sy;
+                return _image3DMatrixBuilder.Sy;
             }
             set
             {
-                _activeImageMatrixBuilder.Scale(ScaleSx, value);
+                _image3DMatrixBuilder.Scale(ScaleSx, value);
                 RaisePropertyChanged(nameof(ScaleSy));
             }
         }
@@ -367,11 +281,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Bx;
+                return _image3DMatrixBuilder.Bx;
             }
             set
             {
-                _activeImageMatrixBuilder.Shear(value, ShearBy);
+                _image3DMatrixBuilder.Shear(value, ShearBy);
                 RaisePropertyChanged(nameof(ShearBx));
             }
         }
@@ -380,11 +294,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.By;
+                return _image3DMatrixBuilder.By;
             }
             set
             {
-                _activeImageMatrixBuilder.Shear(ShearBx, value);
+                _image3DMatrixBuilder.Shear(ShearBx, value);
                 RaisePropertyChanged(nameof(ShearBy));
             }
         }
@@ -393,11 +307,11 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Dx;
+                return _image3DMatrixBuilder.Dx;
             }
             set
             {
-                _activeImageMatrixBuilder.Shift(value, ShiftDy);
+                _image3DMatrixBuilder.Shift(value, ShiftDy);
                 RaisePropertyChanged(nameof(ShiftDx));
             }
         }
@@ -406,25 +320,12 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return _activeImageMatrixBuilder.Dy;
+                return _image3DMatrixBuilder.Dy;
             }
             set
             {
-                _activeImageMatrixBuilder.Shift(ShiftDx, value);
+                _image3DMatrixBuilder.Shift(ShiftDx, value);
                 RaisePropertyChanged(nameof(ShiftDy));
-            }
-        }
-
-        public bool SourceToTargetEnabled
-        {
-            get
-            {
-                return _activeImageMatrixBuilder.SourceToTargetEnabled;
-            }
-            set
-            {
-                _activeImageMatrixBuilder.SetSourceToTargetEnabled(value);
-                RaisePropertyChanged(nameof(SourceToTargetEnabled));
             }
         }
 
@@ -447,63 +348,67 @@ namespace Image_Transformation.ViewModels
         private void ResetValues()
         {
             Brightness = 0;
-            CurrentLayer = 0;
             ShearBx = 0;
             ShearBy = 0;
             ShiftDx = 0;
             ShiftDy = 0;
             ScaleSx = 1;
             ScaleSy = 1;
-            SourceToTargetEnabled = true;
             AsyncEnabled = false;
             Is3DEnabled = false;
             RotationAlpha = 0;
             MarkerQuadrilateral = null;
             QuadrilateralPoints = new ObservableCollection<Point>();
-
-            _activeImageMatrixBuilder.MapBilinear(null)
-                          .Project(null)
-                          .SetSourceToTargetEnabled(true);
         }
 
-        private void SetActiveBitmapBuilder()
-        {
-            if (Is3DEnabled)
-            {
-                _activeImageMatrixBuilder = _image3DMatrixBuilder;
-            }
-            else
-            {
-                _activeImageMatrixBuilder = _image2DMatrixBuilder;
-            }
-        }
-
-        private void SetImagePropertiesInUIThread(Image2DMatrix imageMatrix)
+        private void SetImagePropertiesInUIThread(List<WriteableBitmap> images)
         {
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
-                FileFormat = Path.GetExtension(_activeImageMatrixBuilder.Path);
-                Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
-                ImageHeight = (int)Image.Height;
-                ImageWidth = (int)Image.Width;
-                LayerCount = _activeImageMatrixBuilder.LayerCount - 1;
+                FileFormat = Path.GetExtension(_image3DMatrixBuilder.Path);
+                Images = images;
+                ImageHeight = (int)images[0].Height;
+                ImageWidth = (int)images[0].Width;
+                LayerCount = _image3DMatrixBuilder.LayerCount - 1;
                 LayerSliderEnabled = LayerCount > 1;
             });
         }
 
         private void ShowImage()
         {
-            Image2DMatrix imageMatrix = _activeImageMatrixBuilder.Build();
-            SetImagePropertiesInUIThread(imageMatrix);
+            Image2DMatrix matrix = _image3DMatrixBuilder.SetLayer(0).Build();
+            WriteableBitmap bitmap = MatrixToBitmapImageConverter.GetImage(matrix);
+            List<WriteableBitmap> images = new List<WriteableBitmap>();
+            images.Add(bitmap);
+
+            for (int i = 1; i < _image3DMatrixBuilder.LayerCount; i++)
+            {
+                matrix = _image3DMatrixBuilder.SetLayer(i).Build();
+                bitmap = MatrixToBitmapImageConverter.GetImage(matrix);
+                images.Add(bitmap);
+            }
+            SetImagePropertiesInUIThread(images);
         }
 
         private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
-            Image2DMatrix imageMatrix = await Task.Factory.StartNew(() => _activeImageMatrixBuilder.Build());
+            Image2DMatrix matrix = await Task.Factory.StartNew(() => _image3DMatrixBuilder.SetLayer(0).Build());
+            WriteableBitmap bitmap = MatrixToBitmapImageConverter.GetImage(matrix);
+            List<WriteableBitmap> images = new List<WriteableBitmap>();
+            images.Add(bitmap);
 
+            for (int i = 1; i < _image3DMatrixBuilder.LayerCount; i++)
+            {
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    matrix = await Task.Factory.StartNew(() => _image3DMatrixBuilder.SetLayer(i).Build());
+                    bitmap = MatrixToBitmapImageConverter.GetImage(matrix);
+                    images.Add(bitmap);
+                }
+            }
             if (!cancellationToken.IsCancellationRequested)
             {
-                SetImagePropertiesInUIThread(imageMatrix);
+                SetImagePropertiesInUIThread(images);
             }
         }
 
@@ -511,7 +416,6 @@ namespace Image_Transformation.ViewModels
         {
             if (ImageIsOpen)
             {
-                SetActiveBitmapBuilder();
                 if (AsyncEnabled)
                 {
                     _cancellationTokenSource.Cancel();
