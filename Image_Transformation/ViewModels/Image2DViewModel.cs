@@ -462,12 +462,12 @@ namespace Image_Transformation.ViewModels
                           .SetSourceToTargetEnabled(true);
         }
 
-        private void SetImagePropertiesInUIThread(Image2DMatrix imageMatrix)
+        private void SetImagePropertiesInUIThread(WriteableBitmap image)
         {
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 FileFormat = Path.GetExtension(_image2DMatrixBuilder.Path);
-                Image = MatrixToBitmapImageConverter.GetImage(imageMatrix);
+                Image = image;
                 ImageHeight = (int)Image.Height;
                 ImageWidth = (int)Image.Width;
                 LayerCount = _image2DMatrixBuilder.LayerCount - 1;
@@ -477,17 +477,17 @@ namespace Image_Transformation.ViewModels
 
         private void ShowImage()
         {
-            Image2DMatrix imageMatrix = _image2DMatrixBuilder.Build();
-            SetImagePropertiesInUIThread(imageMatrix);
+            WriteableBitmap image = _image2DMatrixBuilder.Build();
+            SetImagePropertiesInUIThread(image);
         }
 
         private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
-            Image2DMatrix imageMatrix = await Task.Factory.StartNew(() => _image2DMatrixBuilder.Build());
+            WriteableBitmap image = await Task.Factory.StartNew(() => _image2DMatrixBuilder.Build());
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                SetImagePropertiesInUIThread(imageMatrix);
+                SetImagePropertiesInUIThread(image);
             }
         }
 

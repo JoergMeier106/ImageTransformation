@@ -1,13 +1,13 @@
 ﻿namespace Image_Transformation
 {
-    public class Shifting2DTransformation : IImageOperation
+    public class Shifting2DTransformation : IImage2DOperation
     {
-        private readonly IImageLoader _imageLoader;
+        private readonly IImage2DLoader _imageLoader;
         private Image2DMatrix _cashedMatrix;
         private int _lastDx;
         private int _lastDy;
 
-        public Shifting2DTransformation(IImageLoader imageLoader)
+        public Shifting2DTransformation(IImage2DLoader imageLoader)
         {
             _imageLoader = imageLoader;
         }
@@ -31,7 +31,7 @@
                     _lastDx = Dx;
                     _lastDy = Dy;
 
-                    Transformation2DMatrix shiftingMatrix = Transformation2DMatrix.UnitMatrix.Shift(Dx, Dy);
+                    TransformationMatrix shiftingMatrix = TransformationMatrix.UnitMatrix3x3.Shift2D(Dx, Dy);
                     _cashedMatrix = Image2DMatrix.Transform(sourceMatrix,
                         new Image2DMatrix(sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.BytePerPixel), shiftingMatrix);
                 }

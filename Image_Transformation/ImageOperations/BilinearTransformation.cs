@@ -5,11 +5,11 @@ using System.Windows;
 
 namespace Image_Transformation
 {
-    public class BilinearTransformation : IImageOperation
+    public class BilinearTransformation : IImage2DOperation
     {
-        private readonly IImageLoader _imageLoader;
+        private readonly IImage2DLoader _imageLoader;
 
-        public BilinearTransformation(IImageLoader imageLoader)
+        public BilinearTransformation(IImage2DLoader imageLoader)
         {
             _imageLoader = imageLoader;
         }

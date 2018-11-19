@@ -64,6 +64,13 @@
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="1*" />
                     <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
+                    <RowDefinition Height="1*" />
                 </Grid.RowDefinitions>
                 <CheckBox
                     Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="2"
@@ -87,7 +94,7 @@
                 <Label Grid.Column="0" Grid.Row="3"
                        IsEnabled="{Binding ImageIsOpen}"
                        Content="Depth:" />
-                <Label Grid.Column="0" Grid.Row="3"
+                <Label Grid.Column="1" Grid.Row="3"
                        Content="{Binding ImageDepth}"
                        IsEnabled="{Binding ImageIsOpen}"
                        Margin="0,2,10,2" />
@@ -162,25 +169,24 @@
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="0" Grid.Row="9"
-                       Content="Bx:"
+                       Content="Dz:"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="1" Grid.Row="9"
-                       Content="{Binding ShearBx}"
+                       Content="{Binding ShiftDz}"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="9"
-                        Maximum="10"
-                        Minimum="-10"
-                        TickFrequency="0.1"
+                        Maximum="{Binding ImageHeight}"
+                        Minimum="{Binding ImageHeight, Converter={StaticResource toNegative}}"
                         Command="{Binding Update}"
-                        Value="{Binding ShearBx, Mode=TwoWay}"
+                        Value="{Binding ShiftDz, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="0" Grid.Row="10"
-                       Content="By:"
+                       Content="Bxy:"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="1" Grid.Row="10"
-                       Content="{Binding ShearBy}"
+                       Content="{Binding ShearBxy}"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="10"
@@ -188,17 +194,92 @@
                         Minimum="-10"
                         TickFrequency="0.1"
                         Command="{Binding Update}"
-                        Value="{Binding ShearBy, Mode=TwoWay}"
+                        Value="{Binding ShearBxy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="0" Grid.Row="11"
-                       Content="Sx:"
+                       Content="Byx:"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <Label Grid.Column="1" Grid.Row="11"
-                       Content="{Binding ScaleSx}"
+                       Content="{Binding ShearByx}"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <views:CommandSlider
                         Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
+                        Maximum="10"
+                        Minimum="-10"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ShearByx, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="12"
+                       Content="Bxz:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="12"
+                       Content="{Binding ShearBxz}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="12"
+                        Maximum="10"
+                        Minimum="-10"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ShearBxz, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="13"
+                       Content="Bzx:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="13"
+                       Content="{Binding ShearBzx}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
+                        Maximum="10"
+                        Minimum="-10"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ShearBzx, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="14"
+                       Content="Byz:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="14"
+                       Content="{Binding ShearByz}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="14"
+                        Maximum="10"
+                        Minimum="-10"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ShearByz, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="15"
+                       Content="Bzy:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="15"
+                       Content="{Binding ShearBzy}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="15"
+                        Maximum="10"
+                        Minimum="-10"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ShearBzy, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="16"
+                       Content="Sx:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="16"
+                       Content="{Binding ScaleSx}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="16"
                         Maximum="10"
                         Minimum="0"
                         TickFrequency="0.1"
@@ -206,14 +287,14 @@
                         Value="{Binding ScaleSx, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="12"
+                <Label Grid.Column="0" Grid.Row="17"
                        Content="Sy:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="12"
+                <Label Grid.Column="1" Grid.Row="17"
                        Content="{Binding ScaleSy}"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <views:CommandSlider
-                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="12"
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="17"
                         Maximum="10"
                         Minimum="0"
                         TickFrequency="0.1"
@@ -221,28 +302,70 @@
                         Value="{Binding ScaleSy, Mode=TwoWay}"
                         IsSnapToTickEnabled="True"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="0" Grid.Row="13"
-                       Content="Rotation:"
+                <Label Grid.Column="0" Grid.Row="18"
+                       Content="Sz:"
                        IsEnabled="{Binding ImageIsOpen}" />
-                <Label Grid.Column="1" Grid.Row="13"
-                       Content="{Binding RotationAlpha}"
+                <Label Grid.Column="1" Grid.Row="18"
+                       Content="{Binding ScaleSz}"
                        IsEnabled="{Binding ImageIsOpen}" />
                 <views:CommandSlider
-                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="18"
+                        Maximum="10"
+                        Minimum="0"
+                        TickFrequency="0.1"
+                        Command="{Binding Update}"
+                        Value="{Binding ScaleSz, Mode=TwoWay}"
+                        IsSnapToTickEnabled="True"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="19"
+                       Content="Rotation X:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="19"
+                       Content="{Binding RotationXAlpha}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="19"
                         Maximum="3.14159265359"
                         Minimum="-3.14159265359"
                         TickFrequency="0.5"
                         Command="{Binding Update}"
-                        Value="{Binding RotationAlpha, Mode=TwoWay}"
+                        Value="{Binding RotationXAlpha, Mode=TwoWay}"
                         IsEnabled="{Binding ImageIsOpen}" />
-                <Button Grid.Column="0" Grid.ColumnSpan="4" Grid.Row="14"
-                        Content="Reset All"
-                        Command="{Binding ResetAll}"
-                        Margin="10,10,10,10"
-                        Padding="0,5,0,5"
-                        BorderBrush="Gray"
-                        Background="AliceBlue" />
+                <Label Grid.Column="0" Grid.Row="20"
+                       Content="Rotation Y:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="20"
+                       Content="{Binding RotationYAlpha}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="20"
+                        Maximum="3.14159265359"
+                        Minimum="-3.14159265359"
+                        TickFrequency="0.5"
+                        Command="{Binding Update}"
+                        Value="{Binding RotationYAlpha, Mode=TwoWay}"
+                        IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="0" Grid.Row="21"
+                       Content="Rotation Z:"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <Label Grid.Column="1" Grid.Row="21"
+                       Content="{Binding RotationZAlpha}"
+                       IsEnabled="{Binding ImageIsOpen}" />
+                <views:CommandSlider
+                        Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="21"
+                        Maximum="3.14159265359"
+                        Minimum="-3.14159265359"
+                        TickFrequency="0.5"
+                        Command="{Binding Update}"
+                        Value="{Binding RotationZAlpha, Mode=TwoWay}"
+                        IsEnabled="{Binding ImageIsOpen}" />
             </Grid>
+            <Button Content="Reset All"
+                    Command="{Binding ResetAll}"
+                    Margin="10,10,10,10"
+                    Padding="0,5,0,5"
+                    BorderBrush="Gray"
+                    Background="AliceBlue" />
             <Button Content="Save Image"
                     Command="{Binding SaveImage}"
                     Margin="10,10,10,10"

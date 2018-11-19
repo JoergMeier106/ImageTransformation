@@ -1,11 +1,10 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 
 namespace Image_Transformation
 {
-    public sealed class ImageMatrixLoader : IImageLoader
+    public sealed class Image3DMatrixLoader : IImage3DLoader
     {
-        private byte[] _imageBytes;
+        private Image3DMatrix _image3DMatrix;
         private int _lastLayer;
         private string _lastPath;
 
@@ -18,7 +17,7 @@ namespace Image_Transformation
         public string Path { get; set; }
         public int Width { get; private set; }
 
-        public Image2DMatrix GetImageMatrix()
+        public Image3DMatrix GetImageMatrix()
         {
             MatrixChanged = false;
             if (_lastPath != Path || _lastLayer != Layer)
@@ -30,22 +29,10 @@ namespace Image_Transformation
                 ReadMetaInformation();
 
                 byte[] rawBytes = File.ReadAllBytes(Path);
-                _imageBytes = GetLayerBytes(rawBytes, Layer, BytePerPixel);
                 LayerCount = rawBytes.Length / (Width * Height * BytePerPixel);
+                _image3DMatrix = new Image3DMatrix(Height, Width, BytePerPixel, rawBytes);
             }
-            return new Image2DMatrix(Height, Width, _imageBytes);
-        }
-
-        private byte[] GetLayerBytes(byte[] rawBytes, int layer, int bytesPerPixel)
-        {
-            int imageSize = Height * Width * bytesPerPixel;
-            int imagePosition = imageSize * layer;
-
-            byte[] targetRawBytes = new byte[imageSize];
-
-            Array.Copy(rawBytes, imagePosition, targetRawBytes, 0, imageSize);
-
-            return targetRawBytes;
+            return _image3DMatrix;
         }
 
         private void ReadMetaInformation()

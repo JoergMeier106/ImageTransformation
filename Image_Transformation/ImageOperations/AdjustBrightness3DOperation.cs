@@ -1,12 +1,12 @@
 ﻿namespace Image_Transformation
 {
-    public class AdjustBrightnessOperation : IImageOperation
+    public class AdjustBrightness3DOperation : IImage3DOperation
     {
-        private readonly IImageLoader _imageLoader;
-        private Image2DMatrix _cashedMatrix;
+        private readonly IImage3DLoader _imageLoader;
+        private Image3DMatrix _cashedMatrix;
         private double _lastBrightnessFactor;
 
-        public AdjustBrightnessOperation(IImageLoader imageLoader)
+        public AdjustBrightness3DOperation(IImage3DLoader imageLoader)
         {
             _imageLoader = imageLoader;
         }
@@ -17,10 +17,10 @@
         public double MetaFileBrightnessFactor => _imageLoader.MetaFileBrightnessFactor;
         public bool UseCustomBrightness { get; set; }
 
-        public Image2DMatrix GetImageMatrix()
+        public Image3DMatrix GetImageMatrix()
         {
             MatrixChanged = false;
-            Image2DMatrix sourceMatrix = _imageLoader.GetImageMatrix();
+            Image3DMatrix sourceMatrix = _imageLoader.GetImageMatrix();
             if (UseCustomBrightness)
             {
                 AdjustBrightness(sourceMatrix, BrightnessFactor);
@@ -33,7 +33,7 @@
             return _cashedMatrix;
         }
 
-        private void AdjustBrightness(Image2DMatrix sourceMatrix, double brightnessFactor)
+        private void AdjustBrightness(Image3DMatrix sourceMatrix, double brightnessFactor)
         {
             if (_lastBrightnessFactor != brightnessFactor || _imageLoader.MatrixChanged)
             {

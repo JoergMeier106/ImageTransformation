@@ -1,4 +1,6 @@
-﻿using System.Windows.Media;
+﻿using System;
+using System.Collections.Generic;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
 namespace Image_Transformation
@@ -11,17 +13,45 @@ namespace Image_Transformation
             {
                 int height = imageMatrix.Height;
                 int width = imageMatrix.Width;
-
+                int bitsPerPixel = 8 * imageMatrix.BytePerPixel;
                 byte[] imageBytes = imageMatrix.GetBytes();
 
-                int bitsPerPixel = 8 * imageMatrix.BytePerPixel;
-                int stride = (width * bitsPerPixel + 7) / 8;
-
-                PixelFormat pixelFormat = imageMatrix.BytePerPixel == 2 ? PixelFormats.Gray16 : PixelFormats.Gray8;
-                BitmapSource bitmapSource = BitmapSource.Create(width, height, 96, 96, pixelFormat, null, imageBytes, stride);
-                return new WriteableBitmap(bitmapSource);
+                return CreateWriteableBitmap(height, width, bitsPerPixel, imageBytes);
             }
-            return new WriteableBitmap(512, 512, 96, 96, PixelFormats.Gray16, null);
+            return null;
+        }
+
+        public static IEnumerable<WriteableBitmap> GetImages(Image3DMatrix imageMatrix)
+        {
+            if (imageMatrix != null)
+            {
+                int height = imageMatrix.Height;
+                int width = imageMatrix.Width;
+                int depth = imageMatrix.Depth;
+                int bitsPerPixel = 8 * imageMatrix.BytePerPixel;
+
+                WriteableBitmap[] bitmaps = new WriteableBitmap[depth];
+
+                for (int layer = 0; layer < depth; layer++)
+                {
+                    byte[] imageBytes = imageMatrix.GetBytes(layer);
+                    WriteableBitmap bitmap = CreateWriteableBitmap(height, width, bitsPerPixel, imageBytes);
+                    bitmap.Freeze();
+                    bitmaps[layer] = bitmap;
+                }
+
+                return bitmaps;
+            }
+            return Array.Empty<WriteableBitmap>();
+        }
+
+        private static WriteableBitmap CreateWriteableBitmap(int height, int width, int bitsPerPixel, byte[] imageBytes)
+        {
+            int stride = (width * bitsPerPixel + 7) / 8;
+
+            PixelFormat pixelFormat = bitsPerPixel == 16 ? PixelFormats.Gray16 : PixelFormats.Gray8;
+            BitmapSource bitmapSource = BitmapSource.Create(width, height, 96, 96, pixelFormat, null, imageBytes, stride);
+            return new WriteableBitmap(bitmapSource);
         }
     }
 }
