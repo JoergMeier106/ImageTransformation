@@ -15,7 +15,7 @@ namespace Image_Transformation
 
         public Image3DMatrix(int height, int width, int bytePerPixel, byte[] bytes)
         {
-            Height = height;
+            Height = Math.Min(height, MAX_HEIGHT);
             Width = width;
             BytePerPixel = bytePerPixel;
             Depth = bytes.Length / (Width * Height * BytePerPixel);
@@ -27,9 +27,9 @@ namespace Image_Transformation
 
         public Image3DMatrix(int height, int width, int depth, int bytePerPixel)
         {
-            Height = height;
-            Width = width;
-            Depth = depth;
+            Height = Math.Min(height, MAX_HEIGHT);
+            Width = Math.Min(width, MAX_WIDTH);
+            Depth = Math.Min(depth, MAX_Depth);
             _matrix = new ushort[Depth, Height, Width];
             BytePerPixel = bytePerPixel;
             _tokenSource = new CancellationTokenSource();

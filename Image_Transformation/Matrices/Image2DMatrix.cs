@@ -17,29 +17,28 @@ namespace Image_Transformation
 
         private CancellationTokenSource _tokenSource;
 
-        public Image2DMatrix(int height, int width, byte[] bytes)
+        public Image2DMatrix(int height, int width, byte[] bytes) : this(height, width)
+        {
+            BytePerPixel = bytes.Length / (Height * Width);
+            CreateMatrix(bytes);
+        }
+
+        public Image2DMatrix(int height, int width, int bytePerPixel) : this(height, width)
+        {
+            BytePerPixel = bytePerPixel;
+            _tokenSource = new CancellationTokenSource();
+        }
+
+        private Image2DMatrix(int height, int width)
         {
             Height = Math.Min(height, MAX_HEIGHT);
             Width = Math.Min(width, MAX_WIDTH);
             _matrix = new ushort[Height, Width];
-            BytePerPixel = bytes.Length / (Height * Width);
-            _tokenSource = new CancellationTokenSource();
-
-            CreateMatrix(bytes);
-        }
-
-        public Image2DMatrix(int height, int width, int bytePerPixel)
-        {
-            Height = height;
-            Width = width;
-            _matrix = new ushort[Height, Width];
-            BytePerPixel = bytePerPixel;
             _tokenSource = new CancellationTokenSource();
         }
 
         public int BytePerPixel { get; private set; }
         public int Height { get; }
-
         public int Width { get; }
 
         public ushort this[int y, int x]
@@ -48,11 +47,25 @@ namespace Image_Transformation
             set { _matrix[y, x] = value; }
         }
 
+        /// <summary>
+        /// Applies a function to every pixel of the image.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the original pixel values.</param>
+        /// <param name="targetMatrix">The image where the new values will be stored.</param>
+        /// <param name="action">This function gets the original pixel value and returns a new one.</param>
+        /// <returns>The targetMatrix will be returned.</returns>
         public static Image2DMatrix Map(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<ushort, ushort> action)
         {
             return Map(sourceMatrix, targetMatrix, (x, y) => action(sourceMatrix[y, x]));
         }
 
+        /// <summary>
+        /// Applies a function to every pixel of the image.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the original pixel values.</param>
+        /// <param name="targetMatrix">The image where the new values will be stored.</param>
+        /// <param name="action">This function gets the position of the original pixel and returns a value for it.</param>
+        /// /// <returns>The targetMatrix will be returned.</returns>
         public static Image2DMatrix Map(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<int, int, ushort> action)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
@@ -70,6 +83,14 @@ namespace Image_Transformation
             return Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
         }
 
+        /// <summary>
+        /// Checks if x is between 0 and height and if y is between 0 and width.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <param name="height"></param>
+        /// <param name="width"></param>
+        /// <returns></returns>
         public static bool PointIsInBounds(int x, int y, int height, int width)
         {
             return y >= 0 && y < height && x >= 0 && x < width;
