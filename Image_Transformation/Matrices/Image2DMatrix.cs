@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Abstractions for a 2D Image. Provides methods for transformations.
+    /// </summary>
     public class Image2DMatrix
     {
         private const int MAX_HEIGHT = 8192;
@@ -16,8 +19,8 @@ namespace Image_Transformation
 
         public Image2DMatrix(int height, int width, byte[] bytes)
         {
-            Height = height;
-            Width = width;
+            Height = Math.Min(height, MAX_HEIGHT);
+            Width = Math.Min(width, MAX_WIDTH);
             _matrix = new ushort[Height, Width];
             BytePerPixel = bytes.Length / (Height * Width);
             _tokenSource = new CancellationTokenSource();

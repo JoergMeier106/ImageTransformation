@@ -30,6 +30,8 @@ namespace Image_Transformation.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #region Binding Properties
+
         public bool AsyncEnabled
         {
             get { return _asyncEnabled; }
@@ -369,6 +371,14 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        #endregion Binding Properties
+
+        private void CancelOngoingOperations()
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
+
         private void RaisePropertyChanged(string propertyname)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
@@ -397,6 +407,7 @@ namespace Image_Transformation.ViewModels
 
         private void SetImagePropertiesInUIThread(List<WriteableBitmap> images)
         {
+            //Binding properties must be set in the UI thread.
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 Images = images;
@@ -423,28 +434,19 @@ namespace Image_Transformation.ViewModels
 
         private async Task UpdateImage()
         {
-            try
+            if (ImageIsOpen)
             {
-                if (ImageIsOpen)
+                IsBusy = true;
+                CancelOngoingOperations();
+                if (AsyncEnabled)
                 {
-                    IsBusy = true;
-                    if (AsyncEnabled)
-                    {
-                        _cancellationTokenSource.Cancel();
-                        _cancellationTokenSource = new CancellationTokenSource();
-                        await ShowImageAsync(_cancellationTokenSource.Token);
-                    }
-                    else
-                    {
-                        ShowImage();
-                    }
-                    IsBusy = false;
+                    await ShowImageAsync(_cancellationTokenSource.Token);
                 }
-            }
-            catch (System.Exception e)
-            {
-                string stacktrace = e.StackTrace;
-                throw;
+                else
+                {
+                    ShowImage();
+                }
+                IsBusy = false;
             }
         }
     }

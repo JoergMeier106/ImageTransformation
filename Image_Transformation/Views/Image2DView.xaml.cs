@@ -1,5 +1,7 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 using System.Windows;
+using System.Windows.Input;
 
 namespace Image_Transformation.Views
 {
@@ -13,6 +15,24 @@ namespace Image_Transformation.Views
         public Image2DView()
         {
             InitializeComponent();
+            CenterWindow();
+        }
+
+        /// <summary>
+        /// Check if the user entered a number!
+        /// </summary>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        private static bool IsTextAllowed(string text)
+        {
+            return !_regex.IsMatch(text);
+        }
+
+        /// <summary>
+        /// Move the this window to the center of the main screen.
+        /// </summary>
+        private void CenterWindow()
+        {
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             double windowWidth = Width;
@@ -21,12 +41,14 @@ namespace Image_Transformation.Views
             Top = (screenHeight / 2) - (windowHeight / 2);
         }
 
-        private static bool IsTextAllowed(string text)
+        private void OnBackClicked(object sender, EventArgs e)
         {
-            return !_regex.IsMatch(text);
+            MainView mainView = new MainView(); ;
+            mainView.Show();
+            Close();
         }
 
-        private void TextBox_PreviewTextInput(object sender, System.Windows.Input.TextCompositionEventArgs e)
+        private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             e.Handled = !IsTextAllowed(e.Text);
         }

@@ -3,6 +3,9 @@ using System.Windows.Input;
 
 namespace Image_Transformation.ViewModels
 {
+    /// <summary>
+    /// This class can be used as a default command which takes an action that will be invoked when Execute is called.
+    /// </summary>
     public class RelayCommand : ICommand
     {
         private readonly Action<object> execute;

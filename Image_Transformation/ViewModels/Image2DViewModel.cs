@@ -38,6 +38,8 @@ namespace Image_Transformation.ViewModels
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #region Binding Properties
+
         public bool AsyncEnabled
         {
             get { return _asyncEnabled; }
@@ -435,6 +437,15 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+        #endregion Binding Properties
+
+        private void CancelOngoingOperations()
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
+        }
+
         private void RaisePropertyChanged(string propertyname)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyname));
@@ -464,6 +475,7 @@ namespace Image_Transformation.ViewModels
 
         private void SetImagePropertiesInUIThread(WriteableBitmap image)
         {
+            //Binding properties must be set in the UI thread.
             Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 FileFormat = Path.GetExtension(_image2DMatrixBuilder.Path);
@@ -495,10 +507,10 @@ namespace Image_Transformation.ViewModels
         {
             if (ImageIsOpen)
             {
+                CancelOngoingOperations();
                 if (AsyncEnabled)
                 {
-                    _cancellationTokenSource.Cancel();
-                    _cancellationTokenSource = new CancellationTokenSource();
+                    CancelOngoingOperations();
                     await ShowImageAsync(_cancellationTokenSource.Token);
                 }
                 else

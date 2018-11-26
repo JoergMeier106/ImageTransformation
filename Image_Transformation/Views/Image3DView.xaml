@@ -40,6 +40,13 @@
                              IsHitTestVisible="False"
                              BusyContent="Matrix is loading..." />
     <StackPanel Grid.Column="1" Background="AliceBlue" Margin="0,0,10,0">
+      <Button Content="←"
+              FontSize="30"
+              BorderBrush="AliceBlue"
+              Background="AliceBlue"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Top"
+              Click="OnBackClicked"/>
       <Button Content="Open Image"
           Command="{Binding OpenImage}"
           Margin="10,10,10,10"

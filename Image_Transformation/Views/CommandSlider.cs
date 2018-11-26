@@ -4,6 +4,9 @@ using System.Windows.Input;
 
 namespace Image_Transformation.Views
 {
+    /// <summary>
+    /// Adds the possibility to bind to the ValueChanged event.
+    /// </summary>
     public class CommandSlider : Slider
     {
         public static readonly DependencyProperty CommandProperty =

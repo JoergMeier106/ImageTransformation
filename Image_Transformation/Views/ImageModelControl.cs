@@ -19,10 +19,11 @@ using Point3D = System.Windows.Media.Media3D.Point3D;
 
 namespace Image_Transformation.Views
 {
+    /// <summary>
+    /// Handles the loading of multiple images as 3D model.
+    /// </summary>
     public class ImageModelControl : HelixViewport3D, INotifyPropertyChanged
     {
-        private CancellationTokenSource _cancellationTokenSource;
-
         public static readonly DependencyProperty ImagesProperty =
             DependencyProperty.Register(nameof(Images), typeof(IEnumerable<WriteableBitmap>), typeof(ImageModelControl), new PropertyMetadata(ImagesPropertyChanged));
 
@@ -32,24 +33,29 @@ namespace Image_Transformation.Views
         public static readonly DependencyProperty LayerSpaceProperty =
             DependencyProperty.Register(nameof(LayerSpace), typeof(double), typeof(ImageModelControl), new PropertyMetadata(ImagesPropertyChanged));
 
+        private CancellationTokenSource _cancellationTokenSource;
         private bool _isBusy;
 
         public ImageModelControl()
         {
-            Camera.Position = new Point3D(0, 5, -3500);
-            Camera.LookDirection = new Vector3D(0, -5, 3500);
-            (Camera as PerspectiveCamera).FieldOfView = 10;
+            SetCameraStartingPosition();
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>
+        /// The images from which the model is created.
+        /// </summary>
         public IEnumerable<WriteableBitmap> Images
         {
             get { return (IEnumerable<WriteableBitmap>)GetValue(ImagesProperty); }
             set { SetValue(ImagesProperty, value); }
         }
 
+        /// <summary>
+        /// Enables the use of a BusyIndicator.
+        /// </summary>
         public bool IsBusy
         {
             get { return _isBusy; }
@@ -60,12 +66,18 @@ namespace Image_Transformation.Views
             }
         }
 
+        /// <summary>
+        /// Sets the image opacity of each layer.
+        /// </summary>
         public double LayerOpacity
         {
             get { return (double)GetValue(LayerOpacityProperty); }
             set { SetValue(LayerOpacityProperty, value); }
         }
 
+        /// <summary>
+        /// Sets the space between the layer.
+        /// </summary>
         public double LayerSpace
         {
             get { return (double)GetValue(LayerSpaceProperty); }
@@ -124,6 +136,13 @@ namespace Image_Transformation.Views
             return bitmapImage;
         }
 
+        /// <summary>
+        /// Creates a MeshGeometry3D which is quadrilateral. For each layer such a mesh is created.
+        /// </summary>
+        /// <param name="height">The height of the quadrilateral</param>
+        /// <param name="width">The width of the quadrilateral</param>
+        /// <param name="zOff">The distance from the origin in z direction</param>
+        /// <returns></returns>
         private static MeshGeometry3D CreateLayerMesh(double height, double width, double zOff)
         {
             MeshGeometry3D layerMesh = new MeshGeometry3D();
@@ -136,13 +155,12 @@ namespace Image_Transformation.Views
             };
             layerMesh.Positions = corners;
 
-            Int32[] indices =
+            //The triangles are needed for applying textures.
+            Int32Collection Triangles = new Int32Collection(new int[]
             {
                  2,1,0,
                  3,2,0
-            };
-
-            Int32Collection Triangles = new Int32Collection(indices);
+            });
             layerMesh.TriangleIndices = Triangles;
             layerMesh.TextureCoordinates = new PointCollection(new List<Point>
             {
@@ -162,6 +180,13 @@ namespace Image_Transformation.Views
             }
         }
 
+        /// <summary>
+        /// Dependend on a threshold, an alpha value is applied to dark pixels.
+        /// </summary>
+        /// <param name="convertedImage">The image which will be changed. This image must have a pixel format which have an alpha channel.</param>
+        /// <param name="threshold">Pixel below this threshold receive an alpha value</param>
+        /// <param name="alphaValue">This alpha value will be applied to pixel below the threshold</param>
+        /// <returns></returns>
         private static BitmapSource MakeDarkPixelsTransparent(FormatConvertedBitmap convertedImage, int threshold, int alphaValue)
         {
             Bitmap imageWithDarkToAlpha = ConvertFormatConvertedBitmapToBitmap(convertedImage);
@@ -177,9 +202,17 @@ namespace Image_Transformation.Views
                     }
                 }
             }
+            //To use the new image as the texture of a 3D model, a bitmapSource is needed.
             BitmapSource bitmapSource = ConvertBitmapToBitmapSource(imageWithDarkToAlpha);
             imageWithDarkToAlpha.Dispose();
             return bitmapSource;
+        }
+
+        private void Cancel()
+        {
+            _cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Dispose();
+            _cancellationTokenSource = new CancellationTokenSource();
         }
 
         private async Task<Model3DGroup> CreateModelsAsync()
@@ -190,6 +223,7 @@ namespace Image_Transformation.Views
             for (int i = 0; i < Images.Count(); i++)
             {
                 WriteableBitmap originalImage = originalImages[i];
+                //The 3D model for one layer is created
                 GeometryModel3D layer = await CreateOneLayerAsync(originalImage, i);
                 modelGroup.Children.Add(layer);
             }
@@ -200,16 +234,20 @@ namespace Image_Transformation.Views
         private async Task<GeometryModel3D> CreateOneLayerAsync(WriteableBitmap originalImage, int layerIndex)
         {
             GeometryModel3D layer = null;
+            //The freeze is needed to share the object between threads.
             originalImage.Freeze();
             double layerSpace = LayerSpace;
             double layerOpacity = LayerOpacity;
 
             await Task.Run(() =>
             {
-                FormatConvertedBitmap convertedImage = ConvertPixelFormat(originalImage, PixelFormats.Prgba64);               
+                //Add an alpha channel to the image.
+                FormatConvertedBitmap convertedImage = ConvertPixelFormat(originalImage, PixelFormats.Prgba64);
+                //Add alpha value to dark pixel.
                 BitmapSource bitmapSource = MakeDarkPixelsTransparent(convertedImage, threshold: 100, alphaValue: 0);
 
                 MeshGeometry3D layerMesh = CreateLayerMesh(bitmapSource.Height, bitmapSource.Width, -layerIndex * layerSpace);
+
                 Material material = new DiffuseMaterial(new ImageBrush(bitmapSource) { Opacity = layerOpacity });
                 layer = new GeometryModel3D
                 {
@@ -231,7 +269,8 @@ namespace Image_Transformation.Views
 
             if (Images != null && Images.Any())
             {
-                ResetCancellationTokenSource();
+                //Cancel any ongoing operation.
+                Cancel();
 
                 try
                 {
@@ -252,11 +291,11 @@ namespace Image_Transformation.Views
             });
         }
 
-        private void ResetCancellationTokenSource()
+        private void SetCameraStartingPosition()
         {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = new CancellationTokenSource();
+            Camera.Position = new Point3D(0, 5, -3500);
+            Camera.LookDirection = new Vector3D(0, -5, 3500);
+            (Camera as PerspectiveCamera).FieldOfView = 10;
         }
 
         private void ShowModels(ModelVisual3D modelsVisual)

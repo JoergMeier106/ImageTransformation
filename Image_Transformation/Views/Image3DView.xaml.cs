@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
 using System.Windows;
 
 namespace Image_Transformation.Views
@@ -8,17 +8,30 @@ namespace Image_Transformation.Views
     /// </summary>
     public partial class Image3DView : Window
     {
-        private static readonly Regex _regex = new Regex("[^0-9.-]+");
-
         public Image3DView()
         {
             InitializeComponent();
+            CenterWindow();
+        }
+
+        /// <summary>
+        /// Move the this window to the center of the main screen.
+        /// </summary>
+        private void CenterWindow()
+        {
             double screenWidth = SystemParameters.PrimaryScreenWidth;
             double screenHeight = SystemParameters.PrimaryScreenHeight;
             double windowWidth = Width;
             double windowHeight = Height;
             Left = (screenWidth / 2) - (windowWidth / 2);
             Top = (screenHeight / 2) - (windowHeight / 2);
+        }
+
+        private void OnBackClicked(object sender, EventArgs e)
+        {
+            MainView mainView = new MainView(); ;
+            mainView.Show();
+            Close();
         }
     }
 }
