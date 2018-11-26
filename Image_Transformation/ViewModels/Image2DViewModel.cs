@@ -325,7 +325,7 @@ namespace Image_Transformation.ViewModels
                         using (var fileStream = new FileStream(saveFileDialog.FileName, FileMode.Create))
                         {
                             BitmapEncoder encoder = new PngBitmapEncoder();
-                            encoder.Frames.Add(BitmapFrame.Create((BitmapSource)Image));
+                            encoder.Frames.Add(BitmapFrame.Create(Image));
                             encoder.Save(fileStream);
                         }
                     }

@@ -19,12 +19,13 @@ namespace Image_Transformation.ViewModels
         private bool _imageIsOpen;
         private List<WriteableBitmap> _images;
         private int _imageWidth;
+        private bool _isBusy;
 
         public Image3DViewModel()
         {
             _image3DMatrixBuilder = new Image3DBuilder();
             _cancellationTokenSource = new CancellationTokenSource();
-            AsyncEnabled = false;
+            AsyncEnabled = true;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
@@ -114,6 +115,16 @@ namespace Image_Transformation.ViewModels
             {
                 _imageWidth = value;
                 RaisePropertyChanged(nameof(ImageWidth));
+            }
+        }
+
+        public bool IsBusy
+        {
+            get { return _isBusy; }
+            set
+            {
+                _isBusy = value;
+                RaisePropertyChanged(nameof(IsBusy));
             }
         }
 
@@ -378,7 +389,7 @@ namespace Image_Transformation.ViewModels
             ScaleSx = 1;
             ScaleSy = 1;
             ScaleSz = 1;
-            AsyncEnabled = false;
+            AsyncEnabled = true;
             RotationXAlpha = 0;
             RotationYAlpha = 0;
             RotationZAlpha = 0;
@@ -416,6 +427,7 @@ namespace Image_Transformation.ViewModels
             {
                 if (ImageIsOpen)
                 {
+                    IsBusy = true;
                     if (AsyncEnabled)
                     {
                         _cancellationTokenSource.Cancel();
@@ -426,6 +438,7 @@ namespace Image_Transformation.ViewModels
                     {
                         ShowImage();
                     }
+                    IsBusy = false;
                 }
             }
             catch (System.Exception e)

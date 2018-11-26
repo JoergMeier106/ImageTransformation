@@ -139,18 +139,32 @@ namespace Image_Transformation
             {
                 Parallel.For(0, targetMatrix.Depth, options, (z) =>
                 {
-                    Parallel.For(0, targetMatrix.Height, options, (y) =>
+                    try
                     {
-                        Parallel.For(0, targetMatrix.Width, options, (x) =>
+                        Parallel.For(0, targetMatrix.Height, options, (y) =>
                         {
-                            var (x_, y_, z_) = transformFunction(x, y, z);
-
-                            if (PointIsInBounds(x_, y_, z_, sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth))
+                            try
                             {
-                                targetMatrix[z, y, x] = sourceMatrix[z_, y_, x_];
+                                Parallel.For(0, targetMatrix.Width, options, (x) =>
+                                {
+                                    var (x_, y_, z_) = transformFunction(x, y, z);
+
+                                    if (PointIsInBounds(x_, y_, z_, sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth))
+                                    {
+                                        targetMatrix[z, y, x] = sourceMatrix[z_, y_, x_];
+                                    }
+                                });
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                Console.WriteLine("Operation Cancelled");
                             }
                         });
-                    });
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        Console.WriteLine("Operation Cancelled");
+                    }
                 });
             }
             catch (OperationCanceledException)

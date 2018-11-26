@@ -178,6 +178,7 @@ namespace Image_Transformation.Views
                 }
             }
             BitmapSource bitmapSource = ConvertBitmapToBitmapSource(imageWithDarkToAlpha);
+            imageWithDarkToAlpha.Dispose();
             return bitmapSource;
         }
 
@@ -205,7 +206,7 @@ namespace Image_Transformation.Views
 
             await Task.Run(() =>
             {
-                FormatConvertedBitmap convertedImage = ConvertPixelFormat(originalImage, PixelFormats.Prgba64);
+                FormatConvertedBitmap convertedImage = ConvertPixelFormat(originalImage, PixelFormats.Prgba64);               
                 BitmapSource bitmapSource = MakeDarkPixelsTransparent(convertedImage, threshold: 100, alphaValue: 0);
 
                 MeshGeometry3D layerMesh = CreateLayerMesh(bitmapSource.Height, bitmapSource.Width, -layerIndex * layerSpace);
