@@ -106,7 +106,7 @@ namespace Image_Transformation
             if (transformationMatrix != TransformationMatrix.UnitMatrix4x4)
             {
                 Image3DMatrix targetMatrix = new Image3DMatrix(imageMatrix.Height, imageMatrix.Width, imageMatrix.Depth, imageMatrix.BytePerPixel);
-                imageMatrix = Image3DMatrix.TransformTargetToSource(imageMatrix, targetMatrix, transformationMatrix);
+                imageMatrix = Image3DMatrix.Transform(imageMatrix, targetMatrix, transformationMatrix);
             }
 
             return imageMatrix;

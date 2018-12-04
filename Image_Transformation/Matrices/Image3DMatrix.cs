@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,9 +8,9 @@ namespace Image_Transformation
 {
     public class Image3DMatrix
     {
-        private const int MAX_Depth = 64;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
+        private const int MAX_DEPTH = 128;
         private readonly ushort[,,] _matrix;
 
         private CancellationTokenSource _tokenSource;
@@ -29,7 +31,7 @@ namespace Image_Transformation
         {
             Height = Math.Min(height, MAX_HEIGHT);
             Width = Math.Min(width, MAX_WIDTH);
-            Depth = Math.Min(depth, MAX_Depth);
+            Depth = Math.Min(depth, MAX_DEPTH);
             _matrix = new ushort[Depth, Height, Width];
             BytePerPixel = bytePerPixel;
             _tokenSource = new CancellationTokenSource();
@@ -101,6 +103,10 @@ namespace Image_Transformation
         public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, Image3DMatrix targetMatrix,
             Func<int, int, int, (int X, int Y_, int Z_)> transformFunction)
         {
+            SizeInfo size = GetSizeAfterTransformation(sourceMatrix, transformFunction);
+
+            targetMatrix = new Image3DMatrix(size.Height, size.Width, size.Depth, sourceMatrix.BytePerPixel);
+
             for (int z = 0; z < sourceMatrix.Depth; z++)
             {
                 for (int y = 0; y < sourceMatrix.Height; y++)
@@ -110,14 +116,55 @@ namespace Image_Transformation
                         ushort targetValue = sourceMatrix[z, y, x];
                         var (x_, y_, z_) = transformFunction(x, y, z);
 
-                        if (PointIsInBounds(x_, y_, z_, targetMatrix.Height, targetMatrix.Width, targetMatrix.Depth))
+                        int shiftedX = x_ + Math.Abs(size.SmallestX);
+                        int shiftedY = y_ + Math.Abs(size.SmallestY);
+                        int shiftedZ = z_ + Math.Abs(size.SmallestZ);
+
+                        if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, size.Height, size.Width, size.Depth))
                         {
-                            targetMatrix[z_, y_, x_] = targetValue;
+                            targetMatrix[shiftedZ, shiftedY, shiftedX] = targetValue;
                         }
                     }
                 }
             }
             return targetMatrix;
+        }
+
+        private static SizeInfo GetSizeAfterTransformation(Image3DMatrix sourceMatrix,
+            Func<int, int, int, (int X_, int Y_, int Z_)> transformFunction)
+        {
+            SizeInfo size = new SizeInfo();
+
+            size.SmallestX = int.MaxValue;
+            size.SmallestY = int.MaxValue;
+            size.SmallestZ = int.MaxValue;
+
+            size.BiggestX = int.MinValue;
+            size.BiggestY = int.MinValue;
+            size.BiggestZ = int.MinValue;
+
+            for (int z = 0; z < sourceMatrix.Depth; z++)
+            {
+                for (int y = 0; y < sourceMatrix.Height; y++)
+                {
+                    for (int x = 0; x < sourceMatrix.Width; x++)
+                    {
+                        var (X_, Y_, Z_) = transformFunction(x, y, z);
+                        size.SmallestX = Math.Min(size.SmallestX, X_);
+                        size.SmallestY = Math.Min(size.SmallestY, Y_);
+                        size.SmallestZ = Math.Min(size.SmallestZ, Z_);
+
+                        size.BiggestX = Math.Max(size.BiggestX, X_);
+                        size.BiggestY = Math.Max(size.BiggestY, Y_);
+                        size.BiggestZ = Math.Max(size.BiggestZ, Z_);
+                    }
+                }
+            }
+            size.Height = Math.Min(Math.Abs(size.BiggestY) + Math.Abs(size.SmallestY) + 1, MAX_HEIGHT);
+            size.Width = Math.Min(Math.Abs(size.BiggestX) + Math.Abs(size.SmallestX) + 1, MAX_WIDTH);
+            size.Depth = Math.Min(Math.Abs(size.BiggestZ) + Math.Abs(size.SmallestX) + 1, MAX_DEPTH);
+
+            return size;
         }
 
         public static Image3DMatrix TransformTargetToSource(Image3DMatrix sourceMatrix, Image3DMatrix imageMatrix,
@@ -226,6 +273,37 @@ namespace Image_Transformation
                 { z },
                 { 1 }
             });
+        }
+
+        private static Image3DMatrix CreateNewSizedMatrix(Dictionary<(int x, int y, int z), ushort> transformedPoints, int bytePerPixel)
+        {
+            int smallestX = transformedPoints.Select(point => point.Key.x).Min();
+            int smallestY = transformedPoints.Select(point => point.Key.y).Min();
+            int smallestZ = transformedPoints.Select(point => point.Key.z).Min();
+
+            int biggestX = transformedPoints.Select(point => point.Key.x).Max();
+            int biggestY = transformedPoints.Select(point => point.Key.y).Max();
+            int biggestZ = transformedPoints.Select(point => point.Key.z).Max();
+
+            int newHeight = Math.Min(Math.Abs(biggestY) + Math.Abs(smallestY) + 1, MAX_HEIGHT);
+            int newWidth = Math.Min(Math.Abs(biggestX) + Math.Abs(smallestX) + 1, MAX_WIDTH);
+            int newDepth = Math.Min(Math.Abs(biggestZ) + Math.Abs(smallestZ) + 1, MAX_DEPTH);
+
+            Image3DMatrix transformedMatrix = new Image3DMatrix(newHeight, newWidth, newDepth, bytePerPixel);
+
+            foreach (var (x, y, z) in transformedPoints.Keys)
+            {
+                int shiftedX = x + Math.Abs(smallestX);
+                int shiftedY = y + Math.Abs(smallestY);
+                int shiftedZ = z + Math.Abs(smallestZ);
+
+                if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, newHeight, newWidth, newDepth))
+                {
+                    transformedMatrix[shiftedZ, shiftedY, shiftedX] = transformedPoints[(x, y, z)];
+                }
+            }
+
+            return transformedMatrix;
         }
 
         private static ParallelOptions CreateParallelOptions(Image3DMatrix matrix)
