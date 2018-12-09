@@ -426,6 +426,7 @@ namespace Image_Transformation.ViewModels
         private async Task ShowImageAsync(CancellationToken cancellationToken)
         {
             List<WriteableBitmap> images = new List<WriteableBitmap>(await Task.Factory.StartNew(() => _image3DMatrixBuilder.Build()));
+            IsBusy = false;
             if (!cancellationToken.IsCancellationRequested)
             {
                 SetImagePropertiesInUIThread(images);

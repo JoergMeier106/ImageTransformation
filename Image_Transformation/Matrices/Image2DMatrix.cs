@@ -86,16 +86,16 @@ namespace Image_Transformation
         /// <summary>
         /// Checks if x is between 0 and height and if y is between 0 and width.
         /// </summary>
-        /// <param name="x"></param>
-        /// <param name="y"></param>
-        /// <param name="height"></param>
-        /// <param name="width"></param>
-        /// <returns></returns>
         public static bool PointIsInBounds(int x, int y, int height, int width)
         {
             return y >= 0 && y < height && x >= 0 && x < width;
         }
 
+        /// <summary>
+        /// Transforms each pixel position from the source image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="transformFunction">This function gets the original position and returns a new position.</param>
         public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Func<int, int, (int X, int Y)> transformFunction)
         {
             Dictionary<(int X, int Y), ushort> transformedPoints = new Dictionary<(int X, int Y), ushort>();
@@ -114,6 +114,11 @@ namespace Image_Transformation
             return CreateNewSizedMatrix(transformedPoints, sourceMatrix.BytePerPixel);
         }
 
+        /// <summary>
+        /// Transforms each pixel position from the source image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="transformationMatrix">This matrix will be applied to the original positions to get a new position.</param>
         public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, TransformationMatrix transformationMatrix)
         {
             return Transform(sourceMatrix, (x, y) =>
@@ -122,14 +127,26 @@ namespace Image_Transformation
             });
         }
 
-        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Image2DMatrix imageMatrix, TransformationMatrix transformationMatrix)
+        /// <summary>
+        /// Transforms each pixel position from the source image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="targetMatrix">The image to which the transformed pixel are written to.</param>
+        /// <param name="transformationMatrix">This matrix will be applied to the original positions to get a new position.</param>
+        public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, TransformationMatrix transformationMatrix)
         {
-            return Transform(sourceMatrix, imageMatrix, (x, y) =>
+            return Transform(sourceMatrix, targetMatrix, (x, y) =>
             {
                 return ApplyTransformationMatrix(x, y, transformationMatrix);
             });
         }
 
+        /// <summary>
+        /// Transforms each pixel position from the source image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="targetMatrix">The image to which the transformed pixel are written to.</param>
+        /// <param name="transformFunction">This function gets the original position and returns a new position.</param>
         public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix, Func<int, int, (int X, int Y)> transformFunction)
         {
             for (int y = 0; y < sourceMatrix.Height; y++)
@@ -148,15 +165,28 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
-        public static Image2DMatrix TransformTargetToSource(Image2DMatrix sourceMatrix, Image2DMatrix imageMatrix,
+        /// <summary>
+        /// Transforms each pixel position from the target image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="targetMatrix">The image to which the transformed pixel are written to.</param>
+        /// <param name="transformationMatrix">This matrix will be applied to the original positions to get a new position.</param>
+        /// <returns></returns>
+        public static Image2DMatrix TransformTargetToSource(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix,
                             TransformationMatrix transformationMatrix)
         {
-            return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y) =>
+            return TransformTargetToSource(sourceMatrix, targetMatrix, (x, y) =>
             {
                 return ApplyTransformationMatrix(x, y, transformationMatrix);
             });
         }
 
+        /// <summary>
+        /// Transforms each pixel position from the target image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the pixel values.</param>
+        /// <param name="targetMatrix">The image to which the transformed pixel are written to.</param>
+        /// <param name="transformFunction">This function gets the original position and returns a new position.</param>
         public static Image2DMatrix TransformTargetToSource(Image2DMatrix sourceMatrix, Image2DMatrix targetMatrix,
             Func<int, int, (int x, int y)> transformFunction)
         {
@@ -165,6 +195,8 @@ namespace Image_Transformation
 
             try
             {
+                //Due to using target to source exactly one value will be asigned for each position, so it is save
+                //to run the process with parallel for loops.
                 Parallel.For(0, targetMatrix.Height, options, (y) =>
                 {
                     Parallel.For(0, targetMatrix.Width, options, (x) =>
@@ -183,13 +215,6 @@ namespace Image_Transformation
                 Console.WriteLine("Operation Cancelled");
             }
             return targetMatrix;
-        }
-
-        public void CancelParallelTransformation()
-        {
-            _tokenSource.Cancel();
-            _tokenSource.Dispose();
-            _tokenSource = new CancellationTokenSource();
         }
 
         public byte[] GetBytes()
@@ -272,6 +297,13 @@ namespace Image_Transformation
                 CancellationToken = matrix._tokenSource.Token,
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
+        }
+
+        private void CancelParallelTransformation()
+        {
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
+            _tokenSource = new CancellationTokenSource();
         }
 
         private void CreateMatrix(byte[] bytes)

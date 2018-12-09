@@ -105,8 +105,7 @@ namespace Image_Transformation
         {
             if (transformationMatrix != TransformationMatrix.UnitMatrix4x4)
             {
-                Image3DMatrix targetMatrix = new Image3DMatrix(imageMatrix.Height, imageMatrix.Width, imageMatrix.Depth, imageMatrix.BytePerPixel);
-                imageMatrix = Image3DMatrix.Transform(imageMatrix, targetMatrix, transformationMatrix);
+                imageMatrix = Image3DMatrix.Transform(imageMatrix, transformationMatrix);
             }
 
             return imageMatrix;
@@ -127,7 +126,7 @@ namespace Image_Transformation
                             RotateX3D(AlphaX, xc, yc, zc).
                             RotateY3D(AlphaY, xc, yc, zc).
                             RotateZ3D(AlphaZ, xc, yc, zc).
-                            Shift3D(Dx, Dy, Dz).Invert3D();
+                            Shift3D(Dx, Dy, Dz);
 
                 return transformationMatrix;
             }

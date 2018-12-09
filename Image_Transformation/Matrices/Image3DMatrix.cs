@@ -1,16 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Abstractions for a 3D Image. Provides methods for transformations.
+    /// </summary>
     public class Image3DMatrix
     {
+        private const int MAX_DEPTH = 128;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
-        private const int MAX_DEPTH = 128;
         private readonly ushort[,,] _matrix;
 
         private CancellationTokenSource _tokenSource;
@@ -48,11 +49,25 @@ namespace Image_Transformation
             set { _matrix[z, y, x] = value; }
         }
 
+        /// <summary>
+        /// Applies a function to every voxel of the image.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the original voxel values.</param>
+        /// <param name="targetMatrix">The image where the new values will be stored.</param>
+        /// <param name="action">This function gets the original voxel value and returns a new one.</param>
+        /// <returns>The targetMatrix will be returned.</returns>
         public static Image3DMatrix Map(Image3DMatrix sourceMatrix, Image3DMatrix targetMatrix, Func<ushort, ushort> action)
         {
             return Map(sourceMatrix, targetMatrix, (x, y, z) => action(sourceMatrix[z, y, x]));
         }
 
+        /// <summary>
+        /// Applies a function to every voxel of the image.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the original voxel values.</param>
+        /// <param name="targetMatrix">The image where the new values will be stored.</param>
+        /// <param name="action">This function gets the position of the original voxel and returns a value for it.</param>
+        /// /// <returns>The targetMatrix will be returned.</returns>
         public static Image3DMatrix Map(Image3DMatrix sourceMatrix, Image3DMatrix targetMatrix, Func<int, int, int, ushort> action)
         {
             for (int z = 0; z < sourceMatrix.Depth; z++)
@@ -73,145 +88,46 @@ namespace Image_Transformation
             return Map(matrix, matrix, (sourceValue) => (ushort)(Math.Min(sourceValue * value, ushort.MaxValue)));
         }
 
+        /// <summary>
+        /// Checks if x is between 0 and height and if y is between 0 and width.
+        /// </summary>
         public static bool PointIsInBounds(int x, int y, int z, int height, int width, int depth)
         {
             return y >= 0 && y < height && x >= 0 && x < width && z >= 0 && z < depth;
         }
 
-        public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, Func<int, int, int, (int X, int Y, int Z)> transformFunction)
-        {
-            Image3DMatrix targetMatrix = new Image3DMatrix(sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth, sourceMatrix.BytePerPixel);
-            return Transform(sourceMatrix, targetMatrix, transformFunction);
-        }
-
         public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, TransformationMatrix transformationMatrix)
-        {
-            return Transform(sourceMatrix, (x, y, z) =>
-            {
-                return ApplyTransformationMatrix(x, y, z, transformationMatrix);
-            });
-        }
-
-        public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, Image3DMatrix imageMatrix, TransformationMatrix transformationMatrix)
-        {
-            return Transform(sourceMatrix, imageMatrix, (x, y, z) =>
-            {
-                return ApplyTransformationMatrix(x, y, z, transformationMatrix);
-            });
-        }
-
-        public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, Image3DMatrix targetMatrix,
-            Func<int, int, int, (int X, int Y_, int Z_)> transformFunction)
-        {
-            SizeInfo size = GetSizeAfterTransformation(sourceMatrix, transformFunction);
-
-            targetMatrix = new Image3DMatrix(size.Height, size.Width, size.Depth, sourceMatrix.BytePerPixel);
-
-            for (int z = 0; z < sourceMatrix.Depth; z++)
-            {
-                for (int y = 0; y < sourceMatrix.Height; y++)
-                {
-                    for (int x = 0; x < sourceMatrix.Width; x++)
-                    {
-                        ushort targetValue = sourceMatrix[z, y, x];
-                        var (x_, y_, z_) = transformFunction(x, y, z);
-
-                        int shiftedX = x_ + Math.Abs(size.SmallestX);
-                        int shiftedY = y_ + Math.Abs(size.SmallestY);
-                        int shiftedZ = z_ + Math.Abs(size.SmallestZ);
-
-                        if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, size.Height, size.Width, size.Depth))
-                        {
-                            targetMatrix[shiftedZ, shiftedY, shiftedX] = targetValue;
-                        }
-                    }
-                }
-            }
-            return targetMatrix;
-        }
-
-        private static SizeInfo GetSizeAfterTransformation(Image3DMatrix sourceMatrix,
-            Func<int, int, int, (int X_, int Y_, int Z_)> transformFunction)
-        {
-            SizeInfo size = new SizeInfo();
-
-            size.SmallestX = int.MaxValue;
-            size.SmallestY = int.MaxValue;
-            size.SmallestZ = int.MaxValue;
-
-            size.BiggestX = int.MinValue;
-            size.BiggestY = int.MinValue;
-            size.BiggestZ = int.MinValue;
-
-            for (int z = 0; z < sourceMatrix.Depth; z++)
-            {
-                for (int y = 0; y < sourceMatrix.Height; y++)
-                {
-                    for (int x = 0; x < sourceMatrix.Width; x++)
-                    {
-                        var (X_, Y_, Z_) = transformFunction(x, y, z);
-                        size.SmallestX = Math.Min(size.SmallestX, X_);
-                        size.SmallestY = Math.Min(size.SmallestY, Y_);
-                        size.SmallestZ = Math.Min(size.SmallestZ, Z_);
-
-                        size.BiggestX = Math.Max(size.BiggestX, X_);
-                        size.BiggestY = Math.Max(size.BiggestY, Y_);
-                        size.BiggestZ = Math.Max(size.BiggestZ, Z_);
-                    }
-                }
-            }
-            size.Height = Math.Min(Math.Abs(size.BiggestY) + Math.Abs(size.SmallestY) + 1, MAX_HEIGHT);
-            size.Width = Math.Min(Math.Abs(size.BiggestX) + Math.Abs(size.SmallestX) + 1, MAX_WIDTH);
-            size.Depth = Math.Min(Math.Abs(size.BiggestZ) + Math.Abs(size.SmallestX) + 1, MAX_DEPTH);
-
-            return size;
-        }
-
-        public static Image3DMatrix TransformTargetToSource(Image3DMatrix sourceMatrix, Image3DMatrix imageMatrix,
-                            TransformationMatrix transformationMatrix)
-        {
-            return TransformTargetToSource(sourceMatrix, imageMatrix, (x, y, z) =>
-            {
-                return ApplyTransformationMatrix(x, y, z, transformationMatrix);
-            });
-        }
-
-        public static Image3DMatrix TransformTargetToSource(Image3DMatrix sourceMatrix, Image3DMatrix targetMatrix,
-            Func<int, int, int, (int x, int y, int z)> transformFunction)
         {
             sourceMatrix.CancelParallelTransformation();
             ParallelOptions options = CreateParallelOptions(sourceMatrix);
 
+            SizeInfo size = GetSizeAfterTransformation(sourceMatrix, transformationMatrix);
+
+            Image3DMatrix targetMatrix = new Image3DMatrix(size.Height, size.Width, size.Depth, sourceMatrix.BytePerPixel);
+            TransformationMatrix invertedTransformationMatrix = transformationMatrix.Invert3D();
+
             try
             {
+                //Due to using target to source exactly one value will be asigned for each position, so it is save
+                //to run the process with parallel for loops.
                 Parallel.For(0, targetMatrix.Depth, options, (z) =>
                 {
-                    try
+                    Parallel.For(0, targetMatrix.Height, options, (y) =>
                     {
-                        Parallel.For(0, targetMatrix.Height, options, (y) =>
+                        Parallel.For(0, targetMatrix.Width, options, (x) =>
                         {
-                            try
-                            {
-                                Parallel.For(0, targetMatrix.Width, options, (x) =>
-                                {
-                                    var (x_, y_, z_) = transformFunction(x, y, z);
+                            var (x_, y_, z_) = ApplyTransformationMatrix(x, y, z, invertedTransformationMatrix);
 
-                                    if (PointIsInBounds(x_, y_, z_, sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth))
-                                    {
-                                        targetMatrix[z, y, x] = sourceMatrix[z_, y_, x_];
-                                    }
-                                });
-                            }
-                            catch (OperationCanceledException)
+                            int shiftedX = x_ + Math.Abs(size.SmallestX);
+                            int shiftedY = y_ + Math.Abs(size.SmallestY);
+                            int shiftedZ = z_ + Math.Abs(size.SmallestZ);
+
+                            if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth))
                             {
-                                Console.WriteLine("Operation Cancelled");
+                                targetMatrix[z, y, x] = sourceMatrix[shiftedZ, shiftedY, shiftedX]; ;
                             }
                         });
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        Console.WriteLine("Operation Cancelled");
-                    }
+                    });
                 });
             }
             catch (OperationCanceledException)
@@ -219,13 +135,6 @@ namespace Image_Transformation
                 Console.WriteLine("Operation Cancelled");
             }
             return targetMatrix;
-        }
-
-        public void CancelParallelTransformation()
-        {
-            _tokenSource.Cancel();
-            _tokenSource.Dispose();
-            _tokenSource = new CancellationTokenSource();
         }
 
         public byte[] GetBytes(int layer)
@@ -275,37 +184,6 @@ namespace Image_Transformation
             });
         }
 
-        private static Image3DMatrix CreateNewSizedMatrix(Dictionary<(int x, int y, int z), ushort> transformedPoints, int bytePerPixel)
-        {
-            int smallestX = transformedPoints.Select(point => point.Key.x).Min();
-            int smallestY = transformedPoints.Select(point => point.Key.y).Min();
-            int smallestZ = transformedPoints.Select(point => point.Key.z).Min();
-
-            int biggestX = transformedPoints.Select(point => point.Key.x).Max();
-            int biggestY = transformedPoints.Select(point => point.Key.y).Max();
-            int biggestZ = transformedPoints.Select(point => point.Key.z).Max();
-
-            int newHeight = Math.Min(Math.Abs(biggestY) + Math.Abs(smallestY) + 1, MAX_HEIGHT);
-            int newWidth = Math.Min(Math.Abs(biggestX) + Math.Abs(smallestX) + 1, MAX_WIDTH);
-            int newDepth = Math.Min(Math.Abs(biggestZ) + Math.Abs(smallestZ) + 1, MAX_DEPTH);
-
-            Image3DMatrix transformedMatrix = new Image3DMatrix(newHeight, newWidth, newDepth, bytePerPixel);
-
-            foreach (var (x, y, z) in transformedPoints.Keys)
-            {
-                int shiftedX = x + Math.Abs(smallestX);
-                int shiftedY = y + Math.Abs(smallestY);
-                int shiftedZ = z + Math.Abs(smallestZ);
-
-                if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, newHeight, newWidth, newDepth))
-                {
-                    transformedMatrix[shiftedZ, shiftedY, shiftedX] = transformedPoints[(x, y, z)];
-                }
-            }
-
-            return transformedMatrix;
-        }
-
         private static ParallelOptions CreateParallelOptions(Image3DMatrix matrix)
         {
             return new ParallelOptions
@@ -313,6 +191,49 @@ namespace Image_Transformation
                 CancellationToken = matrix._tokenSource.Token,
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
+        }
+
+        private static SizeInfo GetSizeAfterTransformation(Image3DMatrix sourceMatrix, TransformationMatrix transformationMatrix)
+        {
+            SizeInfo size = new SizeInfo();
+
+            size.SmallestX = int.MaxValue;
+            size.SmallestY = int.MaxValue;
+            size.SmallestZ = int.MaxValue;
+
+            size.BiggestX = int.MinValue;
+            size.BiggestY = int.MinValue;
+            size.BiggestZ = int.MinValue;
+
+            for (int z = 0; z < sourceMatrix.Depth; z++)
+            {
+                for (int y = 0; y < sourceMatrix.Height; y++)
+                {
+                    for (int x = 0; x < sourceMatrix.Width; x++)
+                    {
+                        var (X_, Y_, Z_) = ApplyTransformationMatrix(x, y, z, transformationMatrix);
+                        size.SmallestX = Math.Min(size.SmallestX, X_);
+                        size.SmallestY = Math.Min(size.SmallestY, Y_);
+                        size.SmallestZ = Math.Min(size.SmallestZ, Z_);
+
+                        size.BiggestX = Math.Max(size.BiggestX, X_);
+                        size.BiggestY = Math.Max(size.BiggestY, Y_);
+                        size.BiggestZ = Math.Max(size.BiggestZ, Z_);
+                    }
+                }
+            }
+            size.Height = Math.Min(Math.Abs(size.BiggestY) + Math.Abs(size.SmallestY) + 1, MAX_HEIGHT);
+            size.Width = Math.Min(Math.Abs(size.BiggestX) + Math.Abs(size.SmallestX) + 1, MAX_WIDTH);
+            size.Depth = Math.Min(Math.Abs(size.BiggestZ) + Math.Abs(size.SmallestX) + 1, MAX_DEPTH);
+
+            return size;
+        }
+
+        private void CancelParallelTransformation()
+        {
+            _tokenSource.Cancel();
+            _tokenSource.Dispose();
+            _tokenSource = new CancellationTokenSource();
         }
 
         private void CreateMatrix(byte[] bytes)

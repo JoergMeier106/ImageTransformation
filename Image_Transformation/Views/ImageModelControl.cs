@@ -198,6 +198,7 @@ namespace Image_Transformation.Views
                     Color color = imageWithDarkToAlpha.GetPixel(x, y);
                     if (color.R < threshold && color.G < threshold && color.B < threshold)
                     {
+                        int alpha = color.R;
                         imageWithDarkToAlpha.SetPixel(x, y, Color.FromArgb(alphaValue, color.R, color.G, color.B));
                     }
                 }

@@ -202,8 +202,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="10"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearBxy, Mode=TwoWay}"
@@ -217,8 +217,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="11"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearByx, Mode=TwoWay}"
@@ -232,8 +232,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="12"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearBxz, Mode=TwoWay}"
@@ -247,8 +247,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="13"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearBzx, Mode=TwoWay}"
@@ -262,8 +262,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="14"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearByz, Mode=TwoWay}"
@@ -277,8 +277,8 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="15"
-                Maximum="10"
-                Minimum="-10"
+                Maximum="5"
+                Minimum="-5"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
                 Value="{Binding ShearBzy, Mode=TwoWay}"
@@ -292,7 +292,7 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="16"
-                Maximum="10"
+                Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
@@ -307,7 +307,7 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="17"
-                Maximum="10"
+                Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
                 Command="{Binding Update}"
@@ -322,7 +322,7 @@
                IsEnabled="{Binding ImageIsOpen}" />
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="18"
-                Maximum="10"
+                Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
                 Command="{Binding Update}"

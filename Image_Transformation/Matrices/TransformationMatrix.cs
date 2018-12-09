@@ -14,12 +14,12 @@ namespace Image_Transformation
         });
 
         public static readonly TransformationMatrix UnitMatrix4x4 = new TransformationMatrix(new double[,]
-{
+        {
             { 1, 0, 0, 0 },
             { 0, 1, 0, 0 },
             { 0, 0, 1, 0 },
             { 0, 0, 0, 1 }
-});
+        });
 
         private readonly double[,] _matrix;
 
@@ -153,9 +153,9 @@ namespace Image_Transformation
 
             TransformationMatrix b = new TransformationMatrix(new double[,]
             {
-                { this[0, 2] },
-                { this[1, 2] },
-                { this[2, 2] },
+                { this[0, 3] },
+                { this[1, 3] },
+                { this[2, 3] },
             });
 
             TransformationMatrix bWithM = m * (-1) * b;
@@ -212,7 +212,6 @@ namespace Image_Transformation
 
         public TransformationMatrix RotateX3D(double alpha, int xc, int yc, int zc)
         {
-            TransformationMatrix shiftToOriginMatrix = UnitMatrix4x4.Shift3D(xc, yc, zc);
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
                 { 1, 0,                 0,               0 },
@@ -220,13 +219,11 @@ namespace Image_Transformation
                 { 0, Math.Sin(alpha),   Math.Cos(alpha), 0 },
                 { 0, 0,                 0,               1 },
             });
-            TransformationMatrix shiftBackMatrix = UnitMatrix4x4.Shift3D(-xc, -yc, -zc);
-            return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
+            return this * rotationMatrix;
         }
 
         public TransformationMatrix RotateY3D(double alpha, int xc, int yc, int zc)
         {
-            TransformationMatrix shiftToOriginMatrix = UnitMatrix4x4.Shift3D(xc, yc, zc);
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
                 {  Math.Cos(alpha), 0,   Math.Sin(alpha), 0 },
@@ -234,13 +231,11 @@ namespace Image_Transformation
                 { -Math.Sin(alpha), 0,   Math.Cos(alpha), 0 },
                 {  0,               0,   0,               1 },
             });
-            TransformationMatrix shiftBackMatrix = UnitMatrix4x4.Shift3D(-xc, -yc, -zc);
-            return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
+            return this * rotationMatrix;
         }
 
         public TransformationMatrix RotateZ3D(double alpha, int xc, int yc, int zc)
         {
-            TransformationMatrix shiftToOriginMatrix = UnitMatrix4x4.Shift3D(xc, yc, zc);
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
                 { Math.Cos(alpha), -Math.Sin(alpha), 0, 0 },
@@ -248,8 +243,7 @@ namespace Image_Transformation
                 { 0,                0,               1, 0 },
                 { 0,                0,               0, 1 },
             });
-            TransformationMatrix shiftBackMatrix = UnitMatrix4x4.Shift3D(-xc, -yc, -zc);
-            return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
+            return this * rotationMatrix;
         }
 
         public TransformationMatrix Scale2D(double sx, double sy)
