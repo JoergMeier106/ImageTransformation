@@ -4,10 +4,10 @@ namespace Image_Transformation
 {
     public sealed class Image3DMatrixLoader : IImage3DLoader
     {
-        private Image3DMatrix _image3DMatrix;
         private int _lastLayer;
         private string _lastPath;
 
+        private byte[] _rawBytes;
         public int BytePerPixel { get; private set; }
         public int Height { get; private set; }
         public int Layer { get; set; }
@@ -28,11 +28,10 @@ namespace Image_Transformation
 
                 ReadMetaInformation();
 
-                byte[] rawBytes = File.ReadAllBytes(Path);
-                LayerCount = rawBytes.Length / (Width * Height * BytePerPixel);
-                _image3DMatrix = new Image3DMatrix(Height, Width, BytePerPixel, rawBytes);
+                _rawBytes = File.ReadAllBytes(Path);
             }
-            return _image3DMatrix;
+            LayerCount = _rawBytes.Length / (Width * Height * BytePerPixel);
+            return new Image3DMatrix(Height, Width, BytePerPixel, _rawBytes);
         }
 
         private void ReadMetaInformation()

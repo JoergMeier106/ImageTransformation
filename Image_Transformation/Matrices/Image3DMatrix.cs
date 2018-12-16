@@ -10,7 +10,7 @@ namespace Image_Transformation
     public class Image3DMatrix
     {
         //The max height, width and depth is necessary to prevent OutOfMemoryExceptions because of too large images.
-        private const int MAX_DEPTH = 128;
+        private const int MAX_DEPTH = 256;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
         private readonly ushort[,,] _matrix;
@@ -20,9 +20,9 @@ namespace Image_Transformation
         public Image3DMatrix(int height, int width, int bytePerPixel, byte[] bytes)
         {
             Height = Math.Min(height, MAX_HEIGHT);
-            Width = width;
+            Width = Math.Min(width, MAX_WIDTH);
             BytePerPixel = bytePerPixel;
-            Depth = bytes.Length / (Width * Height * BytePerPixel);
+            Depth = Math.Min(bytes.Length / (Width * Height * BytePerPixel), MAX_DEPTH);
             _matrix = new ushort[Depth, Height, Width];
             _tokenSource = new CancellationTokenSource();
 

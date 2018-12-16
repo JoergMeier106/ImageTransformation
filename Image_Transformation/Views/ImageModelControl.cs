@@ -28,10 +28,10 @@ namespace Image_Transformation.Views
             DependencyProperty.Register(nameof(Images), typeof(IEnumerable<WriteableBitmap>), typeof(ImageModelControl), new PropertyMetadata(ImagesPropertyChanged));
 
         public static readonly DependencyProperty LayerOpacityProperty =
-            DependencyProperty.Register(nameof(LayerOpacity), typeof(double), typeof(ImageModelControl), new PropertyMetadata(ImagesPropertyChanged));
+            DependencyProperty.Register(nameof(LayerOpacity), typeof(double), typeof(ImageModelControl), new PropertyMetadata(OpacityPropertyChanged));
 
         public static readonly DependencyProperty LayerSpaceProperty =
-            DependencyProperty.Register(nameof(LayerSpace), typeof(double), typeof(ImageModelControl), new PropertyMetadata(ImagesPropertyChanged));
+            DependencyProperty.Register(nameof(LayerSpace), typeof(double), typeof(ImageModelControl), new PropertyMetadata(SpacePropertyChanged));
 
         private CancellationTokenSource _cancellationTokenSource;
         private bool _isBusy;
@@ -180,6 +180,22 @@ namespace Image_Transformation.Views
             }
         }
 
+        private static void SpacePropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        {
+            if (dependencyObject is ImageModelControl control)
+            {
+                control.SpacePropertyChanged();
+            }
+        }
+
+        private static void OpacityPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
+        {
+            if (dependencyObject is ImageModelControl control)
+            {
+                control.OpacityPropertyChanged();
+            }
+        }
+
         /// <summary>
         /// Dependend on a threshold, an alpha value is applied to dark pixels.
         /// </summary>
@@ -199,7 +215,7 @@ namespace Image_Transformation.Views
                     if (color.R < threshold && color.G < threshold && color.B < threshold)
                     {
                         int alpha = color.R;
-                        imageWithDarkToAlpha.SetPixel(x, y, Color.FromArgb(alphaValue, color.R, color.G, color.B));
+                        imageWithDarkToAlpha.SetPixel(x, y, Color.FromArgb(alpha, color.R, color.G, color.B));
                     }
                 }
             }
@@ -261,6 +277,59 @@ namespace Image_Transformation.Views
             return layer;
         }
 
+        private void SpacePropertyChanged()
+        {
+            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
+            {
+                int depth = Images.Count();
+                int currentLayer = 0;
+
+                foreach (var image in Images)
+                {
+                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
+                    group.Children.RemoveAt(currentLayer);
+                    GeometryModel3D newLayer = new GeometryModel3D
+                    {
+                        Geometry = layerMesh,
+                        Material = oldLayer.Material,
+                        BackMaterial = oldLayer.BackMaterial
+                    };
+                    group.Children.Insert(currentLayer, newLayer);
+                    currentLayer++;
+                }
+            }
+        }
+
+        private void OpacityPropertyChanged()
+        {
+            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
+            {
+                int depth = Images.Count();
+                int currentLayer = 0;
+
+                foreach (var image in Images)
+                {
+                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
+                    DiffuseMaterial material = (DiffuseMaterial)oldLayer.Material.CloneCurrentValue();
+
+                    ImageBrush brush = (ImageBrush)material.Brush;
+                    brush.Opacity = LayerOpacity;
+
+                    group.Children.RemoveAt(currentLayer);
+                    GeometryModel3D newLayer = new GeometryModel3D
+                    {
+                        Geometry = layerMesh,
+                        Material = material,
+                        BackMaterial = material
+                    };
+                    group.Children.Insert(currentLayer, newLayer);
+                    currentLayer++;
+                }
+            }
+        }
+
         private async void ImagesPropertyChanged()
         {
             System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
@@ -275,9 +344,11 @@ namespace Image_Transformation.Views
 
                 try
                 {
-                    ModelVisual3D modelsVisual = new ModelVisual3D();
                     Model3DGroup modelGroup = await CreateModelsAsync();
-                    modelsVisual.Content = modelGroup;
+                    ModelVisual3D modelsVisual = new ModelVisual3D
+                    {
+                        Content = modelGroup
+                    };
 
                     ShowModels(modelsVisual);
                 }
