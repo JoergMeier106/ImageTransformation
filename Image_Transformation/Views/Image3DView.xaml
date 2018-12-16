@@ -12,6 +12,7 @@
   <Window.Resources>
     <local:ToNegativeConverter x:Key="toNegative" />
     <local:ToVisibilityConverter x:Key="toVisibility" />
+    <local:InvertBoolConverter x:Key="invertBool" />
   </Window.Resources>
   <Grid x:Name="grid" Background="White">
     <Grid.ColumnDefinitions>
@@ -119,7 +120,6 @@
         <views:CommandSlider
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="4"
                 Maximum="100"
-                Command="{Binding Update}"
                 Value="{Binding Brightness, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -162,7 +162,6 @@
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="7"
                 Maximum="{Binding ImageWidth}"
                 Minimum="{Binding ImageWidth, Converter={StaticResource toNegative}}"
-                Command="{Binding Update}"
                 Value="{Binding ShiftDx, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -176,7 +175,6 @@
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="8"
                 Maximum="{Binding ImageHeight}"
                 Minimum="{Binding ImageHeight, Converter={StaticResource toNegative}}"
-                Command="{Binding Update}"
                 Value="{Binding ShiftDy, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -190,7 +188,6 @@
                 Grid.Column="2" Grid.ColumnSpan="2" Grid.Row="9"
                 Maximum="{Binding ImageHeight}"
                 Minimum="{Binding ImageHeight, Converter={StaticResource toNegative}}"
-                Command="{Binding Update}"
                 Value="{Binding ShiftDz, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -205,7 +202,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearBxy, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -220,7 +216,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearByx, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -235,7 +230,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearBxz, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -250,7 +244,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearBzx, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -265,7 +258,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearByz, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -280,7 +272,6 @@
                 Maximum="5"
                 Minimum="-5"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ShearBzy, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -295,7 +286,6 @@
                 Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ScaleSx, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -310,7 +300,6 @@
                 Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ScaleSy, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -325,7 +314,6 @@
                 Maximum="3"
                 Minimum="0"
                 TickFrequency="0.1"
-                Command="{Binding Update}"
                 Value="{Binding ScaleSz, Mode=TwoWay}"
                 IsSnapToTickEnabled="True"
                 IsEnabled="{Binding ImageIsOpen}" />
@@ -340,7 +328,6 @@
                 Maximum="3.14159265359"
                 Minimum="-3.14159265359"
                 TickFrequency="0.5"
-                Command="{Binding Update}"
                 Value="{Binding RotationXAlpha, Mode=TwoWay}"
                 IsEnabled="{Binding ImageIsOpen}" />
         <Label Grid.Column="0" Grid.Row="20"
@@ -354,7 +341,6 @@
                 Maximum="3.14159265359"
                 Minimum="-3.14159265359"
                 TickFrequency="0.5"
-                Command="{Binding Update}"
                 Value="{Binding RotationYAlpha, Mode=TwoWay}"
                 IsEnabled="{Binding ImageIsOpen}" />
         <Label Grid.Column="0" Grid.Row="21"
@@ -368,10 +354,16 @@
                 Maximum="3.14159265359"
                 Minimum="-3.14159265359"
                 TickFrequency="0.5"
-                Command="{Binding Update}"
                 Value="{Binding RotationZAlpha, Mode=TwoWay}"
                 IsEnabled="{Binding ImageIsOpen}" />
       </Grid>
+      <Button Content="Run"
+              Command="{Binding Run}"
+              IsEnabled="{Binding IsBusy, Converter={StaticResource invertBool}}"
+              Margin="10,10,10,10"
+              Padding="0,5,0,5"
+              BorderBrush="Gray"
+              Background="AliceBlue" />
       <Button Content="Reset All"
               Command="{Binding ResetAll}"
               Margin="10,10,10,10"

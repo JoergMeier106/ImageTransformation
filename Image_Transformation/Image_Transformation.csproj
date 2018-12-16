@@ -96,6 +96,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Converter\InvertBoolConverter.cs" />
     <Compile Include="Converter\ToVisibilityConverter.cs" />
     <Compile Include="Converter\ToNegativeConverter.cs" />
     <Compile Include="Builder\Image3DBuilder.cs" />

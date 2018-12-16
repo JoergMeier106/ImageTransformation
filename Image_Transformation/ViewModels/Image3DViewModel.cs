@@ -154,6 +154,7 @@ namespace Image_Transformation.ViewModels
             }
         }
 
+
         public ICommand ResetAll
         {
             get
@@ -161,6 +162,17 @@ namespace Image_Transformation.ViewModels
                 return new RelayCommand((args) =>
                 {
                     ResetValues();
+                });
+            }
+        }
+
+        public ICommand Run
+        {
+            get
+            {
+                return new RelayCommand(async (args) =>
+                {
+                    await UpdateImage();
                 });
             }
         }
@@ -357,17 +369,6 @@ namespace Image_Transformation.ViewModels
             {
                 _image3DMatrixBuilder.Shift(ShiftDx, ShiftDy, value);
                 RaisePropertyChanged(nameof(ShiftDz));
-            }
-        }
-
-        public ICommand Update
-        {
-            get
-            {
-                return new RelayCommand(async (args) =>
-                {
-                    await UpdateImage();
-                });
             }
         }
 

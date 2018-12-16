@@ -225,14 +225,14 @@ namespace Image_Transformation.Views
             {
                 WriteableBitmap originalImage = originalImages[i];
                 //The 3D model for one layer is created
-                GeometryModel3D layer = await CreateOneLayerAsync(originalImage, i);
+                GeometryModel3D layer = await CreateOneLayerAsync(originalImage, i, Images.Count());
                 modelGroup.Children.Add(layer);
             }
 
             return modelGroup;
         }
 
-        private async Task<GeometryModel3D> CreateOneLayerAsync(WriteableBitmap originalImage, int layerIndex)
+        private async Task<GeometryModel3D> CreateOneLayerAsync(WriteableBitmap originalImage, int layerIndex, int layerCount)
         {
             GeometryModel3D layer = null;
             //The freeze is needed to share the object between threads.
@@ -247,7 +247,7 @@ namespace Image_Transformation.Views
                 //Add alpha value to dark pixel.
                 BitmapSource bitmapSource = MakeDarkPixelsTransparent(convertedImage, threshold: 100, alphaValue: 0);
 
-                MeshGeometry3D layerMesh = CreateLayerMesh(bitmapSource.Height, bitmapSource.Width, -layerIndex * layerSpace);
+                MeshGeometry3D layerMesh = CreateLayerMesh(bitmapSource.Height, bitmapSource.Width, layerCount + (-layerIndex * layerSpace));
 
                 Material material = new DiffuseMaterial(new ImageBrush(bitmapSource) { Opacity = layerOpacity });
                 layer = new GeometryModel3D

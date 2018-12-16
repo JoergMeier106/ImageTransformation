@@ -7,10 +7,11 @@ using System.Threading.Tasks;
 namespace Image_Transformation
 {
     /// <summary>
-    /// Abstractions for a 2D Image. Provides methods for transformations.
+    /// Abstractions for a 2D Image (One or two Byte greyscale only). Provides methods for transformations.
     /// </summary>
     public class Image2DMatrix
     {
+        //The max height and width is necessary to prevent OutOfMemoryExceptions because of too large images.
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
         private readonly ushort[,] _matrix;
@@ -98,6 +99,8 @@ namespace Image_Transformation
         /// <param name="transformFunction">This function gets the original position and returns a new position.</param>
         public static Image2DMatrix Transform(Image2DMatrix sourceMatrix, Func<int, int, (int X, int Y)> transformFunction)
         {
+            //Before returning a new matrix, the transformed points are collected. In the last step, these points will
+            //be analyzed to receive the new height and width of the matrix after the transformation.
             Dictionary<(int X, int Y), ushort> transformedPoints = new Dictionary<(int X, int Y), ushort>();
 
             for (int y = 0; y < sourceMatrix.Height; y++)
@@ -217,6 +220,9 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
+        /// <summary>
+        /// Converts the matrix back to bytes.
+        /// </summary>
         public byte[] GetBytes()
         {
             byte[] bytes = new byte[Height * Width * BytePerPixel];
@@ -227,11 +233,14 @@ namespace Image_Transformation
                     int targetIndex = GetByteOffset(x, y);
                     byte[] targetBytes = BitConverter.GetBytes(_matrix[y, x]);
 
+                    //The higher byte is only relevant for images with two bytes per pixel
                     if (BytePerPixel == 2)
                     {
                         bytes[targetIndex + 1] = targetBytes[1];
                     }
-                    else if (BytePerPixel == 1 && targetBytes[1] > 0)
+                    //Due to operations it is possible that the pixel value gets greater than one byte.
+                    //This is why the value will be set to max value in this is case and any higher bits will be omitted.
+                    else if (BytePerPixel == 1 && targetBytes[1] > 0) 
                     {
                         targetBytes[0] = byte.MaxValue;
                     }
@@ -278,6 +287,7 @@ namespace Image_Transformation
 
             foreach (var (x, y) in transformedPoints.Keys)
             {
+                //This step is necessary to shift all negative points to the positive range.
                 int shiftedX = x + Math.Abs(smallestX);
                 int shiftedY = y + Math.Abs(smallestY);
 

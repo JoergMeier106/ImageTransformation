@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 namespace Image_Transformation
 {
     /// <summary>
-    /// Abstractions for a 3D Image. Provides methods for transformations.
+    /// Abstractions for a 3D Image (One or two Byte greyscale only). Provides methods for transformations.
     /// </summary>
     public class Image3DMatrix
     {
+        //The max height, width and depth is necessary to prevent OutOfMemoryExceptions because of too large images.
         private const int MAX_DEPTH = 128;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
@@ -96,6 +97,12 @@ namespace Image_Transformation
             return y >= 0 && y < height && x >= 0 && x < width && z >= 0 && z < depth;
         }
 
+        /// <summary>
+        /// Transforms each voxel position from the source image to a new position.
+        /// </summary>
+        /// <param name="sourceMatrix">The image which will provide the voxel values.</param>
+        /// <param name="transformationMatrix">This matrix will be applied to the original positions to get a new position.</param>
+        /// <returns></returns>
         public static Image3DMatrix Transform(Image3DMatrix sourceMatrix, TransformationMatrix transformationMatrix)
         {
             sourceMatrix.CancelParallelTransformation();
@@ -137,6 +144,10 @@ namespace Image_Transformation
             return targetMatrix;
         }
 
+        /// <summary>
+        /// Converts one layer of the matrix back to bytes.
+        /// </summary>
+        /// <param name="layer">The layer which should be converted.</param>
         public byte[] GetBytes(int layer)
         {
             byte[] bytes = new byte[Height * Width * BytePerPixel];
@@ -244,7 +255,7 @@ namespace Image_Transformation
                 {
                     for (int x = 0; x < Width; x++)
                     {
-                        int offset = GetByteOffset(z, y, x);
+                        int offset = GetByteOffset(x, y, z);
 
                         if (BytePerPixel == 2)
                         {
@@ -261,6 +272,6 @@ namespace Image_Transformation
 
         private int GetByteOffset(int x, int y) => (x + y * Width) * BytePerPixel;
 
-        private int GetByteOffset(int z, int y, int x) => (x + y * Width + z * Height * Width) * BytePerPixel;
+        private int GetByteOffset(int x, int y, int z) => (x + y * Width + z * Height * Width) * BytePerPixel;
     }
 }
