@@ -235,7 +235,10 @@ namespace Image_Transformation.Views
         private async Task<Model3DGroup> CreateModelsAsync()
         {
             List<WriteableBitmap> originalImages = new List<WriteableBitmap>(Images);
-            Model3DGroup modelGroup = new Model3DGroup();
+            Model3DGroup modelGroup = new Model3DGroup
+            {
+                Children = new Model3DCollection(Images.Count())
+            };
 
             for (int i = 0; i < Images.Count(); i++)
             {
