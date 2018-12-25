@@ -4,8 +4,14 @@ using System.Windows;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// A matrix which can be applied to a 3D or 2D image matrix to realize a transformation.
+    /// </summary>
     public struct TransformationMatrix
     {
+        /// <summary>
+        /// Can be used as start for 2D transformation.
+        /// </summary>
         public static readonly TransformationMatrix UnitMatrix3x3 = new TransformationMatrix(new double[,]
         {
             { 1, 0, 0 },
@@ -13,6 +19,9 @@ namespace Image_Transformation
             { 0, 0, 1 },
         });
 
+        /// <summary>
+        /// Can be used as start for 3D transformation.
+        /// </summary>
         public static readonly TransformationMatrix UnitMatrix4x4 = new TransformationMatrix(new double[,]
         {
             { 1, 0, 0, 0 },
@@ -30,6 +39,11 @@ namespace Image_Transformation
             _matrix = matrix;
         }
 
+        /// <summary>
+        /// Creates an empty matrix with given height and width.
+        /// </summary>
+        /// <param name="height"></param>
+        /// <param name="width"></param>
         public TransformationMatrix(int height, int width)
         {
             Height = height;
@@ -65,6 +79,12 @@ namespace Image_Transformation
             });
         }
 
+        /// <summary>
+        /// Applies a function to each value.
+        /// </summary>
+        /// <param name="sourceMatrix"></param>
+        /// <param name="action"></param>
+        /// <returns></returns>
         public static TransformationMatrix Map(TransformationMatrix sourceMatrix, Func<double, double> action)
         {
             TransformationMatrix targetMatrix = new TransformationMatrix(sourceMatrix.Height, sourceMatrix.Width);
@@ -142,6 +162,11 @@ namespace Image_Transformation
             return adjugateMatrix * (1 / determinant);
         }
 
+        /// <summary>
+        /// Inverts the matrix by using a method described here:
+        /// https://math.stackexchange.com/questions/152462/inverse-of-transformation-matrix
+        /// </summary>
+        /// <returns></returns>
         public TransformationMatrix Invert3D()
         {
             TransformationMatrix m = new TransformationMatrix(new double[,]
@@ -173,6 +198,7 @@ namespace Image_Transformation
         {
             if (sourceQuadrilateral != null)
             {
+                //First the target quadrilateral will be created from the source quadrilateral.
                 double targetWidth = Math.Max(sourceQuadrilateral.X1 - sourceQuadrilateral.X0,
                                               sourceQuadrilateral.X2 - sourceQuadrilateral.X3);
                 double targetHeight = Math.Max(sourceQuadrilateral.Y2 - sourceQuadrilateral.Y1,
@@ -186,11 +212,14 @@ namespace Image_Transformation
                     new Point(targetWidth, targetHeight)
                 });
 
+                //Then, the transformation matrix from the source to the unit square can be calculated.
                 TransformationMatrix unitSquareToSourceTransformation = GetProjectionTransformationFromUnitSquare(sourceQuadrilateral);
                 TransformationMatrix sourceToUnitSquareTransformation = unitSquareToSourceTransformation.Invert2D();
 
+                //After that, the transformation matrix from the unit square to the target will be calculated.
                 TransformationMatrix unitSquareToTargetTransformation = GetProjectionTransformationFromUnitSquare(targetQuadrilateral);
 
+                //To get the full transformation, these two matrices must be concatenated.
                 TransformationMatrix projectiveMapping = unitSquareToTargetTransformation * sourceToUnitSquareTransformation;
                 return this * projectiveMapping;
             }
@@ -199,18 +228,22 @@ namespace Image_Transformation
 
         public TransformationMatrix Rotate2D(double alpha, int xc, int yc)
         {
+            //To rotate around a given point xc, yc, the image must be shifted to xc, yc.
             TransformationMatrix shiftToOriginMatrix = UnitMatrix3x3.Shift2D(xc, yc);
+            //Then it can be rotated.
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
                 { Math.Cos(alpha), -Math.Sin(alpha),  0 },
                 { Math.Sin(alpha),  Math.Cos(alpha),  0 },
                 { 0,                0,                1 }
             });
+            //Finally, it must be shifted back.
             TransformationMatrix shiftBackMatrix = UnitMatrix3x3.Shift2D(-xc, -yc);
+            //Concatination for the complete transformation.
             return this * shiftToOriginMatrix * rotationMatrix * shiftBackMatrix;
         }
 
-        public TransformationMatrix RotateX3D(double alpha, int xc, int yc, int zc)
+        public TransformationMatrix RotateX3D(double alpha)
         {
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
@@ -222,7 +255,7 @@ namespace Image_Transformation
             return this * rotationMatrix;
         }
 
-        public TransformationMatrix RotateY3D(double alpha, int xc, int yc, int zc)
+        public TransformationMatrix RotateY3D(double alpha)
         {
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {
@@ -234,7 +267,7 @@ namespace Image_Transformation
             return this * rotationMatrix;
         }
 
-        public TransformationMatrix RotateZ3D(double alpha, int xc, int yc, int zc)
+        public TransformationMatrix RotateZ3D(double alpha)
         {
             TransformationMatrix rotationMatrix = new TransformationMatrix(new double[,]
             {

@@ -3,6 +3,10 @@ using System.Windows.Media.Imaging;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Creates an image matrix. Most of the methods are lazy, e.g. the changes will be applied after calling Build().
+    /// All transofrmations are executed with target to source.
+    /// </summary>
     public sealed class Image3DBuilder
     {
         private readonly AdjustBrightness3DOperation _brightnessOperation;
@@ -11,28 +15,45 @@ namespace Image_Transformation
 
         public Image3DBuilder()
         {
+            //The image loading stack is smaller than in Image2DBuilder. After loading the bytes, only the
+            //brightness will be set. Bilinear and projective transformations are not supported in 3D by this
+            //implementation.
             _imageMatrixLoader = new Image3DMatrixLoader();
             _brightnessOperation = new AdjustBrightness3DOperation(_imageMatrixLoader);
             _imageLoader = _brightnessOperation;
         }
 
+        #region Rotation
         public double AlphaX { get; private set; }
         public double AlphaY { get; private set; }
         public double AlphaZ { get; private set; }
+        #endregion
+        /// <summary>
+        /// This factor will be applied to each voxel of the image.
+        /// </summary>
         public double Brightness => _brightnessOperation.BrightnessFactor;
+        #region Shearing
         public double Bxy { get; private set; }
         public double Bxz { get; private set; }
         public double Byx { get; private set; }
         public double Byz { get; private set; }
         public double Bzx { get; private set; }
         public double Bzy { get; private set; }
+        #endregion
+        #region Shifting
         public int Dx { get; private set; }
         public int Dy { get; private set; }
         public int Dz { get; private set; }
+        #endregion
+        /// <summary>
+        /// The path of the image file.
+        /// </summary>
         public string Path => _imageMatrixLoader.Path;
+        #region Scaling
         public double Sx { get; private set; }
         public double Sy { get; private set; }
         public double Sz { get; private set; }
+        #endregion
 
         public IEnumerable<WriteableBitmap> Build()
         {
@@ -113,19 +134,18 @@ namespace Image_Transformation
 
         private TransformationMatrix GetTransformationMatrix(Image3DMatrix imageMatrix)
         {
-            int xc = imageMatrix.Width / 2;
-            int yc = imageMatrix.Height / 2;
-            int zc = imageMatrix.Depth / 2;
-
             if (imageMatrix != null)
             {
+                //The transformations will be concatenated here. However, it is possible that
+                //some combinations of parameters do need lead to correct results, because
+                //transformations are not cumulative.
                 TransformationMatrix transformationMatrix = TransformationMatrix.
                             UnitMatrix4x4.
                             Shear3D(Bxy, Byx, Bxz, Bzx, Byz, Bzy).
                             Scale3D(Sx, Sy, Sz).
-                            RotateX3D(AlphaX, xc, yc, zc).
-                            RotateY3D(AlphaY, xc, yc, zc).
-                            RotateZ3D(AlphaZ, xc, yc, zc).
+                            RotateX3D(AlphaX).
+                            RotateY3D(AlphaY).
+                            RotateZ3D(AlphaZ).
                             Shift3D(Dx, Dy, Dz);
 
                 return transformationMatrix;
