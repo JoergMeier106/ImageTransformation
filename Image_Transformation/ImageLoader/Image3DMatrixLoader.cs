@@ -6,32 +6,25 @@ namespace Image_Transformation
     {
         private int _lastLayer;
         private string _lastPath;
-
-        private byte[] _rawBytes;
         public int BytePerPixel { get; private set; }
         public int Height { get; private set; }
         public int Layer { get; set; }
         public int LayerCount { get; private set; }
-        public bool MatrixChanged { get; private set; }
+        public bool MatrixChanged { get; private set; } = true;
         public double MetaFileBrightnessFactor { get; private set; }
         public string Path { get; set; }
         public int Width { get; private set; }
 
         public Image3DMatrix GetImageMatrix()
         {
-            MatrixChanged = false;
-            if (_lastPath != Path || _lastLayer != Layer)
-            {
-                MatrixChanged = true;
-                _lastPath = Path;
-                _lastLayer = Layer;
+            _lastPath = Path;
+            _lastLayer = Layer;
 
-                ReadMetaInformation();
+            ReadMetaInformation();
 
-                _rawBytes = File.ReadAllBytes(Path);
-            }
-            LayerCount = _rawBytes.Length / (Width * Height * BytePerPixel);
-            return new Image3DMatrix(Height, Width, BytePerPixel, _rawBytes);
+            byte[] rawBytes = File.ReadAllBytes(Path);
+            LayerCount = rawBytes.Length / (Width * Height * BytePerPixel);
+            return new Image3DMatrix(Height, Width, BytePerPixel, rawBytes);
         }
 
         private void ReadMetaInformation()
