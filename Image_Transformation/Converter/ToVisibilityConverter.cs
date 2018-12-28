@@ -5,6 +5,9 @@ using System.Windows.Data;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Maps a boolean to a value of Visibility in a view property.
+    /// </summary>
     public class ToVisibilityConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

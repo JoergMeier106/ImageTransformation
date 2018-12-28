@@ -324,6 +324,7 @@ namespace Image_Transformation
                 {
                     int offset = GetByteOffset(x, y);
 
+                    //Only 1 or 2 Bytes per Pixel are supported.
                     if (BytePerPixel == 2)
                     {
                         _matrix[y, x] = BitConverter.ToUInt16(bytes, offset);

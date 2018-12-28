@@ -5,6 +5,9 @@ using System.Windows.Media.Imaging;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Creates BitmapImages out of Image2DMatrix or Image3Dmatrix.
+    /// </summary>
     public static class MatrixToBitmapImageConverter
     {
         public static WriteableBitmap GetImage(Image2DMatrix imageMatrix)
@@ -36,6 +39,7 @@ namespace Image_Transformation
                 {
                     byte[] imageBytes = imageMatrix.GetBytes(layer);
                     WriteableBitmap bitmap = CreateWriteableBitmap(height, width, bitsPerPixel, imageBytes);
+                    //Must be freezed to share it between threads.
                     bitmap.Freeze();
                     bitmaps[layer] = bitmap;
                 }
@@ -49,6 +53,7 @@ namespace Image_Transformation
         {
             int stride = (width * bitsPerPixel + 7) / 8;
 
+            //Only grayscale images with 16 or 8 Bit per pixel are supported.
             PixelFormat pixelFormat = bitsPerPixel == 16 ? PixelFormats.Gray16 : PixelFormats.Gray8;
             BitmapSource bitmapSource = BitmapSource.Create(width, height, 96, 96, pixelFormat, null, imageBytes, stride);
             return new WriteableBitmap(bitmapSource);

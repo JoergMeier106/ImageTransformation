@@ -1,5 +1,8 @@
 ﻿namespace Image_Transformation
 {
+    /// <summary>
+    /// Holds information about the size of a matrix after a transformation.
+    /// </summary>
     public struct SizeInfo
     {
         public int BiggestX { get; set; }

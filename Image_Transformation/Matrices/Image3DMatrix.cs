@@ -108,6 +108,8 @@ namespace Image_Transformation
             sourceMatrix.CancelParallelTransformation();
             ParallelOptions options = CreateParallelOptions(sourceMatrix);
 
+            //The transformation will be executed in the following line the first time to get size information about the matrix after the transformation.
+            //With these information it is possible to create the target matrix.
             SizeInfo size = GetSizeAfterTransformation(sourceMatrix, transformationMatrix);
 
             Image3DMatrix targetMatrix = new Image3DMatrix(size.Height, size.Width, size.Depth, sourceMatrix.BytePerPixel);
@@ -158,10 +160,13 @@ namespace Image_Transformation
                     int targetIndex = GetByteOffset(x, y);
                     byte[] targetBytes = BitConverter.GetBytes(_matrix[layer, y, x]);
 
+                    //The higher byte is only relevant for images with two bytes per pixel
                     if (BytePerPixel == 2)
                     {
                         bytes[targetIndex + 1] = targetBytes[1];
                     }
+                    //Due to operations it is possible that the pixel value gets greater than one byte.
+                    //This is why the value will be set to max value in this is case and any higher bits will be omitted.
                     else if (targetBytes[1] > 0)
                     {
                         targetBytes[0] = byte.MaxValue;
@@ -206,15 +211,16 @@ namespace Image_Transformation
 
         private static SizeInfo GetSizeAfterTransformation(Image3DMatrix sourceMatrix, TransformationMatrix transformationMatrix)
         {
-            SizeInfo size = new SizeInfo();
+            SizeInfo size = new SizeInfo
+            {
+                SmallestX = int.MaxValue,
+                SmallestY = int.MaxValue,
+                SmallestZ = int.MaxValue,
 
-            size.SmallestX = int.MaxValue;
-            size.SmallestY = int.MaxValue;
-            size.SmallestZ = int.MaxValue;
-
-            size.BiggestX = int.MinValue;
-            size.BiggestY = int.MinValue;
-            size.BiggestZ = int.MinValue;
+                BiggestX = int.MinValue,
+                BiggestY = int.MinValue,
+                BiggestZ = int.MinValue
+            };
 
             for (int z = 0; z < sourceMatrix.Depth; z++)
             {
@@ -257,6 +263,7 @@ namespace Image_Transformation
                     {
                         int offset = GetByteOffset(x, y, z);
 
+                        //Only 1 or 2 Bytes per Pixel are supported.
                         if (BytePerPixel == 2)
                         {
                             _matrix[z, y, x] = BitConverter.ToUInt16(bytes, offset);

@@ -1,5 +1,8 @@
 ﻿namespace Image_Transformation
 {
+    /// <summary>
+    /// Applies a factor to each pixel of an Image2DMatrix
+    /// </summary>
     public class AdjustBrightness2DOperation : IImage2DOperation
     {
         private readonly IImage2DLoader _imageLoader;

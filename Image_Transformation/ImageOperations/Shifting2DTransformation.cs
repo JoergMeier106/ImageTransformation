@@ -1,5 +1,8 @@
 ﻿namespace Image_Transformation
 {
+    /// <summary>
+    /// Executes a shifting on an Image2DMatrix.
+    /// </summary>
     public class Shifting2DTransformation : IImage2DOperation
     {
         private readonly IImage2DLoader _imageLoader;

@@ -4,6 +4,9 @@ using System.Windows;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Holds vertices of a quadrilateral. Can be used for projective or bilinear transformations.
+    /// </summary>
     public class Quadrilateral
     {
         public Quadrilateral(IEnumerable<Point> points)
@@ -39,6 +42,12 @@ namespace Image_Transformation
         {
             if (points != null && points.Count() == 4)
             {
+                //Here the points are ordered so that p0, p1, p2, p3 are arranged as follows.
+                //p2---p1
+                //|    |
+                //|    |
+                //p3---p0
+
                 IEnumerable<Point> yOrderedPoints = points.OrderBy((point) => point.Y);
 
                 IEnumerable<Point> upperPoints = yOrderedPoints.Skip(2);

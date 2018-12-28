@@ -4,6 +4,9 @@ using System.Windows.Data;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Toggles a boolean in a view property.
+    /// </summary>
     public class InvertBoolConverter : IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)

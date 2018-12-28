@@ -2,6 +2,9 @@
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Reads the bytes of an image file and creates an instance of Image3DMatrix out of it.
+    /// </summary>
     public sealed class Image3DMatrixLoader : IImage3DLoader
     {
         private int _lastLayer;

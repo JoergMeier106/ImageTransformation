@@ -3,6 +3,9 @@ using System.IO;
 
 namespace Image_Transformation
 {
+    /// <summary>
+    /// Reads the bytes of an image file and creates an instance of Image2DMatrix out of it.
+    /// </summary>
     public sealed class Image2DMatrixLoader : IImage2DLoader
     {
         private byte[] _imageBytes;

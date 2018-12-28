@@ -1,5 +1,8 @@
 ﻿namespace Image_Transformation
 {
+    /// <summary>
+    /// Holds information about an image.
+    /// </summary>
     public struct ImageMetaInformation
     {
         public double BrightnessFactor { get; set; }
