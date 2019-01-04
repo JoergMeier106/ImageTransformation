@@ -102,8 +102,8 @@
     <Compile Include="Converter\ToNegativeConverter.cs" />
     <Compile Include="Builder\Image3DBuilder.cs" />
     <Compile Include="Data\SizeInfo.cs" />
-    <Compile Include="ImageLoader\IImage3DLoader.cs" />
     <Compile Include="ImageLoader\IImage2DLoader.cs" />
+    <Compile Include="ImageLoader\IImage3DLoader.cs" />
     <Compile Include="ImageLoader\Image3DMatrixLoader.cs" />
     <Compile Include="ImageLoader\Image2DMatrixLoader.cs" />
     <Compile Include="Builder\Image2DBuilder.cs" />

@@ -290,9 +290,10 @@ namespace Image_Transformation.ViewModels
         {
             get
             {
-                return new RelayCommand((args) =>
+                return new RelayCommand(async (args) =>
                 {
                     ResetValues();
+                    await UpdateImage();
                 });
             }
         }

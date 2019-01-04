@@ -19,7 +19,11 @@ namespace Image_Transformation
                 int bitsPerPixel = 8 * imageMatrix.BytePerPixel;
                 byte[] imageBytes = imageMatrix.GetBytes();
 
-                return CreateWriteableBitmap(height, width, bitsPerPixel, imageBytes);
+                WriteableBitmap bitmap = CreateWriteableBitmap(height, width, bitsPerPixel, imageBytes);
+                //Must be freezed to share it between threads.
+                bitmap.Freeze();
+
+                return bitmap;
             }
             return null;
         }
