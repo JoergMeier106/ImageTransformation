@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:Image_Transformation"
         xmlns:views="clr-namespace:Image_Transformation.Views"
         mc:Ignorable="d"
-        Background="AliceBlue"
-        Title="Image Transformation" MinWidth="1036" MinHeight="557" Width="1036" Height="557">
+        Background="AliceBlue"        
+        WindowState="Maximized"
+        Title="2D" MinWidth="1036" MinHeight="557" Width="1036" Height="557">
   <Window.Resources>
     <local:ToNegativeConverter x:Key="toNegative" />
     <local:ToVisibilityConverter x:Key="toVisibility" />

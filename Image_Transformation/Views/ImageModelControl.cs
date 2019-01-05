@@ -180,14 +180,6 @@ namespace Image_Transformation.Views
             }
         }
 
-        private static void SpacePropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
-        {
-            if (dependencyObject is ImageModelControl control)
-            {
-                control.SpacePropertyChanged();
-            }
-        }
-
         private static void OpacityPropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
             if (dependencyObject is ImageModelControl control)
@@ -196,33 +188,12 @@ namespace Image_Transformation.Views
             }
         }
 
-        /// <summary>
-        /// Dependend on a threshold, an alpha value is applied to dark pixels.
-        /// </summary>
-        /// <param name="convertedImage">The image which will be changed. This image must have a pixel format which have an alpha channel.</param>
-        /// <param name="threshold">Pixel below this threshold receive an alpha value</param>
-        /// <param name="alphaValue">This alpha value will be applied to pixel below the threshold</param>
-        /// <returns></returns>
-        private static BitmapSource MakeDarkPixelsTransparent(FormatConvertedBitmap convertedImage, int threshold, int alphaValue)
+        private static void SpacePropertyChanged(DependencyObject dependencyObject, DependencyPropertyChangedEventArgs e)
         {
-            Bitmap imageWithDarkToAlpha = ConvertFormatConvertedBitmapToBitmap(convertedImage);
-
-            for (int y = 0; y < imageWithDarkToAlpha.Height; y++)
+            if (dependencyObject is ImageModelControl control)
             {
-                for (int x = 0; x < imageWithDarkToAlpha.Width; x++)
-                {
-                    Color color = imageWithDarkToAlpha.GetPixel(x, y);
-                    if (color.R < threshold && color.G < threshold && color.B < threshold)
-                    {
-                        int alpha = color.R;
-                        imageWithDarkToAlpha.SetPixel(x, y, Color.FromArgb(alpha, color.R, color.G, color.B));
-                    }
-                }
+                control.SpacePropertyChanged();
             }
-            //To use the new image as the texture of a 3D model, a bitmapSource is needed.
-            BitmapSource bitmapSource = ConvertBitmapToBitmapSource(imageWithDarkToAlpha);
-            imageWithDarkToAlpha.Dispose();
-            return bitmapSource;
         }
 
         private void Cancel()
@@ -280,57 +251,13 @@ namespace Image_Transformation.Views
             return layer;
         }
 
-        private void SpacePropertyChanged()
+        private ParallelOptions CreateParallelOptions()
         {
-            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
+            return new ParallelOptions
             {
-                int depth = Images.Count();
-                int currentLayer = 0;
-
-                foreach (var image in Images)
-                {
-                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
-                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
-                    group.Children.RemoveAt(currentLayer);
-                    GeometryModel3D newLayer = new GeometryModel3D
-                    {
-                        Geometry = layerMesh,
-                        Material = oldLayer.Material,
-                        BackMaterial = oldLayer.BackMaterial
-                    };
-                    group.Children.Insert(currentLayer, newLayer);
-                    currentLayer++;
-                }
-            }
-        }
-
-        private void OpacityPropertyChanged()
-        {
-            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
-            {
-                int depth = Images.Count();
-                int currentLayer = 0;
-
-                foreach (var image in Images)
-                {
-                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
-                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
-                    DiffuseMaterial material = (DiffuseMaterial)oldLayer.Material.CloneCurrentValue();
-
-                    ImageBrush brush = (ImageBrush)material.Brush;
-                    brush.Opacity = LayerOpacity;
-
-                    group.Children.RemoveAt(currentLayer);
-                    GeometryModel3D newLayer = new GeometryModel3D
-                    {
-                        Geometry = layerMesh,
-                        Material = material,
-                        BackMaterial = material
-                    };
-                    group.Children.Insert(currentLayer, newLayer);
-                    currentLayer++;
-                }
-            }
+                CancellationToken = _cancellationTokenSource.Token,
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
         }
 
         private async void ImagesPropertyChanged()
@@ -366,6 +293,91 @@ namespace Image_Transformation.Views
             });
         }
 
+        /// <summary>
+        /// Dependend on a threshold, an alpha value is applied to dark pixels.
+        /// </summary>
+        /// <param name="convertedImage">The image which will be changed. This image must have a pixel format which have an alpha channel.</param>
+        /// <param name="threshold">Pixel below this threshold receive an alpha value</param>
+        /// <param name="alphaValue">This alpha value will be applied to pixel below the threshold</param>
+        /// <returns></returns>
+        private BitmapSource MakeDarkPixelsTransparent(FormatConvertedBitmap convertedImage, int threshold, int alphaValue)
+        {
+            Bitmap imageWithDarkToAlpha = ConvertFormatConvertedBitmapToBitmap(convertedImage);
+
+            System.Drawing.Imaging.BitmapData bData = imageWithDarkToAlpha.LockBits(new Rectangle(0, 0, imageWithDarkToAlpha.Width, imageWithDarkToAlpha.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
+            
+            int bitsPerPixel = convertedImage.Format.BitsPerPixel;
+            
+            int size = bData.Stride * bData.Height;
+            
+            byte[] data = new byte[size];
+
+            List<int> indices = CreateIndices(bitsPerPixel, size);
+
+            // This overload copies data of /size/ into /data/ from location specified (/Scan0/)
+            System.Runtime.InteropServices.Marshal.Copy(bData.Scan0, data, 0, size);
+
+            Parallel.ForEach(indices, CreateParallelOptions(), (i) =>
+            {
+                double magnitude = 1 / 3d * (data[i] + data[i + 1] + data[i + 2]);
+
+                //data[i] is the first of 3 bytes of color
+                Color color = Color.FromArgb(data[i], data[i + 1], data[i + 2]);
+                data[i + 6] = data[i];
+                data[i + 7] = data[i + 1];
+            });
+
+            // This override copies the data back into the location specified
+            System.Runtime.InteropServices.Marshal.Copy(data, 0, bData.Scan0, data.Length);
+
+            imageWithDarkToAlpha.UnlockBits(bData);
+
+            //To use the new image as the texture of a 3D model, a bitmapSource is needed.
+            BitmapSource bitmapSource = ConvertBitmapToBitmapSource(imageWithDarkToAlpha);
+            imageWithDarkToAlpha.Dispose();
+            return bitmapSource;
+        }
+
+        private static List<int> CreateIndices(int bitsPerPixel, int size)
+        {
+            List<int> indices = new List<int>();
+            for (int i = 0; i < size; i += bitsPerPixel / 8)
+            {
+                indices.Add(i);
+            }
+
+            return indices;
+        }
+
+        private void OpacityPropertyChanged()
+        {
+            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
+            {
+                int depth = Images.Count();
+                int currentLayer = 0;
+
+                foreach (var image in Images)
+                {
+                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
+                    DiffuseMaterial material = (DiffuseMaterial)oldLayer.Material.CloneCurrentValue();
+
+                    ImageBrush brush = (ImageBrush)material.Brush;
+                    brush.Opacity = LayerOpacity;
+
+                    group.Children.RemoveAt(currentLayer);
+                    GeometryModel3D newLayer = new GeometryModel3D
+                    {
+                        Geometry = layerMesh,
+                        Material = material,
+                        BackMaterial = material
+                    };
+                    group.Children.Insert(currentLayer, newLayer);
+                    currentLayer++;
+                }
+            }
+        }
+
         private void SetCameraStartingPosition()
         {
             Camera.Position = new Point3D(0, 5, -3500);
@@ -378,6 +390,30 @@ namespace Image_Transformation.Views
             Children.Clear();
             Children.Add(new DefaultLights());
             Children.Add(modelsVisual);
+        }
+
+        private void SpacePropertyChanged()
+        {
+            if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
+            {
+                int depth = Images.Count();
+                int currentLayer = 0;
+
+                foreach (var image in Images)
+                {
+                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
+                    group.Children.RemoveAt(currentLayer);
+                    GeometryModel3D newLayer = new GeometryModel3D
+                    {
+                        Geometry = layerMesh,
+                        Material = oldLayer.Material,
+                        BackMaterial = oldLayer.BackMaterial
+                    };
+                    group.Children.Insert(currentLayer, newLayer);
+                    currentLayer++;
+                }
+            }
         }
     }
 }

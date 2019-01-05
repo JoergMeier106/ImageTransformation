@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,7 +12,7 @@ namespace Image_Transformation
     public class Image3DMatrix
     {
         //The max height, width and depth is necessary to prevent OutOfMemoryExceptions because of too large images.
-        private const int MAX_DEPTH = 256;
+        private const int MAX_DEPTH = 2048;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
         private readonly ushort[,,] _matrix;
@@ -108,33 +110,24 @@ namespace Image_Transformation
             sourceMatrix.CancelParallelTransformation();
             ParallelOptions options = CreateParallelOptions(sourceMatrix);
 
-            //The transformation will be executed in the following line the first time to get size information about the matrix after the transformation.
-            //With these information it is possible to create the target matrix.
-            SizeInfo size = GetSizeAfterTransformation(sourceMatrix, transformationMatrix);
-
-            Image3DMatrix targetMatrix = new Image3DMatrix(size.Height, size.Width, size.Depth, sourceMatrix.BytePerPixel);
-            TransformationMatrix invertedTransformationMatrix = transformationMatrix.Invert3D();
+            //Before returning a new matrix, the transformed points are collected. In the last step, these points will
+            //be analyzed to receive the new height, width and depth of the matrix after the transformation.
+            ConcurrentDictionary<(int X, int Y, int Z), ushort> transformedPoints = new ConcurrentDictionary<(int X, int Y, int Z), ushort>();
 
             try
             {
                 //Due to using target to source exactly one value will be asigned for each position, so it is save
                 //to run the process with parallel for loops.
-                Parallel.For(0, targetMatrix.Depth, options, (z) =>
+                Parallel.For(0, sourceMatrix.Depth, options, (z) =>
                 {
-                    Parallel.For(0, targetMatrix.Height, options, (y) =>
+                    Parallel.For(0, sourceMatrix.Height, options, (y) =>
                     {
-                        Parallel.For(0, targetMatrix.Width, options, (x) =>
+                        Parallel.For(0, sourceMatrix.Width, options, (x) =>
                         {
-                            var (x_, y_, z_) = ApplyTransformationMatrix(x, y, z, invertedTransformationMatrix);
+                            ushort targetValue = sourceMatrix[z, y, x];
 
-                            int shiftedX = x_ + Math.Abs(size.SmallestX);
-                            int shiftedY = y_ + Math.Abs(size.SmallestY);
-                            int shiftedZ = z_ + Math.Abs(size.SmallestZ);
-
-                            if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, sourceMatrix.Height, sourceMatrix.Width, sourceMatrix.Depth))
-                            {
-                                targetMatrix[z, y, x] = sourceMatrix[shiftedZ, shiftedY, shiftedX]; ;
-                            }
+                            var targetPoint = ApplyTransformationMatrix(x, y, z, transformationMatrix);
+                            transformedPoints[targetPoint] = targetValue;
                         });
                     });
                 });
@@ -143,7 +136,39 @@ namespace Image_Transformation
             {
                 Console.WriteLine("Operation Cancelled");
             }
-            return targetMatrix;
+            return CreateNewSizedMatrix(transformedPoints, sourceMatrix.BytePerPixel);
+        }
+
+        private static Image3DMatrix CreateNewSizedMatrix(ConcurrentDictionary<(int X, int Y, int Z), ushort> transformedPoints, int bytePerPixel)
+        {
+            int smallestX = transformedPoints.Select(point => point.Key.X).Min();
+            int smallestY = transformedPoints.Select(point => point.Key.Y).Min();
+            int smallestZ = transformedPoints.Select(point => point.Key.Z).Min();
+
+            int biggestX = transformedPoints.Select(point => point.Key.X).Max();
+            int biggestY = transformedPoints.Select(point => point.Key.Y).Max();
+            int biggestZ = transformedPoints.Select(point => point.Key.Z).Max();
+
+            int newHeight = Math.Min(Math.Abs(biggestY) + Math.Abs(smallestY) + 1, MAX_HEIGHT);
+            int newWidth = Math.Min(Math.Abs(biggestX) + Math.Abs(smallestX) + 1, MAX_WIDTH);
+            int newDepth = Math.Min(Math.Abs(biggestZ) + Math.Abs(smallestZ) + 1, MAX_DEPTH);
+
+            Image3DMatrix transformedMatrix = new Image3DMatrix(newHeight, newWidth, newDepth, bytePerPixel);
+
+            foreach (var (x, y, z) in transformedPoints.Keys)
+            {
+                //This step is necessary to shift all negative points to the positive range.
+                int shiftedX = x + Math.Abs(smallestX);
+                int shiftedY = y + Math.Abs(smallestY);
+                int shiftedZ = z + Math.Abs(smallestZ);
+
+                if (PointIsInBounds(shiftedX, shiftedY, shiftedZ, newHeight, newWidth, newDepth))
+                {
+                    transformedMatrix[shiftedZ, shiftedY, shiftedX] = transformedPoints[(x, y, z)];
+                }
+            }
+
+            return transformedMatrix;
         }
 
         /// <summary>
@@ -241,7 +266,7 @@ namespace Image_Transformation
             }
             size.Height = Math.Min(Math.Abs(size.BiggestY) + Math.Abs(size.SmallestY) + 1, MAX_HEIGHT);
             size.Width = Math.Min(Math.Abs(size.BiggestX) + Math.Abs(size.SmallestX) + 1, MAX_WIDTH);
-            size.Depth = Math.Min(Math.Abs(size.BiggestZ) + Math.Abs(size.SmallestX) + 1, MAX_DEPTH);
+            size.Depth = Math.Min(Math.Abs(size.BiggestZ) + Math.Abs(size.SmallestZ) + 1, MAX_DEPTH);
 
             return size;
         }

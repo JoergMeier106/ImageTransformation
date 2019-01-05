@@ -8,7 +8,8 @@
         xmlns:toolkit="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Background="AliceBlue"
-        Title="Image Transformation" MinHeight="840" MinWidth="1105" Height="840" Width="1105">
+        WindowState="Maximized"
+        Title="3D" MinHeight="840" MinWidth="1105" Height="840" Width="1105">
     <Window.Resources>
         <local:ToNegativeConverter x:Key="toNegative" />
         <local:ToVisibilityConverter x:Key="toVisibility" />

@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
-        Title="MainView" MaxHeight="237" MaxWidth="543" MinHeight="237" MinWidth="543" Height="237" Width="543">
+        Title="Image Transformation" MaxHeight="237" MaxWidth="543" MinHeight="237" MinWidth="543" Height="237" Width="543">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="245*" />
