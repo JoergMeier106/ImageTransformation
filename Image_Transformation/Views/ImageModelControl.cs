@@ -35,6 +35,9 @@ namespace Image_Transformation.Views
 
         private CancellationTokenSource _cancellationTokenSource;
         private bool _isBusy;
+        private int _height;
+        private int _width;
+        private int _depth;
 
         public ImageModelControl()
         {
@@ -139,19 +142,17 @@ namespace Image_Transformation.Views
         /// <summary>
         /// Creates a MeshGeometry3D which is quadrilateral. For each layer such a mesh is created.
         /// </summary>
-        /// <param name="height">The height of the quadrilateral</param>
-        /// <param name="width">The width of the quadrilateral</param>
         /// <param name="zOff">The distance from the origin in z direction</param>
         /// <returns></returns>
-        private static MeshGeometry3D CreateLayerMesh(double height, double width, double zOff)
+        private MeshGeometry3D CreateLayerMesh(double zOff)
         {
             MeshGeometry3D layerMesh = new MeshGeometry3D();
             Point3DCollection corners = new Point3DCollection
             {
-                new Point3D(width / 2, height / 2, 1 + zOff),
-                new Point3D(-width / 2, height / 2, 1 + zOff),
-                new Point3D(-width / 2, -height / 2, 1 + zOff),
-                new Point3D(width / 2, -height / 2, 1 + zOff)
+                new Point3D(_width / 2, _height / 2, 1 + zOff),
+                new Point3D(-_width / 2, _height / 2, 1 + zOff),
+                new Point3D(-_width / 2, -_height / 2, 1 + zOff),
+                new Point3D(_width / 2, -_height / 2, 1 + zOff)
             };
             layerMesh.Positions = corners;
 
@@ -208,21 +209,21 @@ namespace Image_Transformation.Views
             List<WriteableBitmap> originalImages = new List<WriteableBitmap>(Images);
             Model3DGroup modelGroup = new Model3DGroup
             {
-                Children = new Model3DCollection(Images.Count())
+                Children = new Model3DCollection(_depth)
             };
 
-            for (int i = 0; i < Images.Count(); i++)
+            for (int i = 0; i < _depth; i++)
             {
                 WriteableBitmap originalImage = originalImages[i];
                 //The 3D model for one layer is created
-                GeometryModel3D layer = await CreateOneLayerAsync(originalImage, i, Images.Count());
+                GeometryModel3D layer = await CreateOneLayerAsync(originalImage, i);
                 modelGroup.Children.Add(layer);
             }
 
             return modelGroup;
         }
 
-        private async Task<GeometryModel3D> CreateOneLayerAsync(WriteableBitmap originalImage, int layerIndex, int layerCount)
+        private async Task<GeometryModel3D> CreateOneLayerAsync(WriteableBitmap originalImage, int layerIndex)
         {
             GeometryModel3D layer = null;
             //The freeze is needed to share the object between threads.
@@ -237,7 +238,7 @@ namespace Image_Transformation.Views
                 //Add alpha value to dark pixel.
                 BitmapSource bitmapSource = MakeDarkPixelsTransparent(convertedImage, threshold: 100, alphaValue: 0);
 
-                MeshGeometry3D layerMesh = CreateLayerMesh(bitmapSource.Height, bitmapSource.Width, layerCount + (-layerIndex * layerSpace));
+                MeshGeometry3D layerMesh = CreateLayerMesh(_depth + (-layerIndex * layerSpace));
 
                 Material material = new DiffuseMaterial(new ImageBrush(bitmapSource) { Opacity = layerOpacity });
                 layer = new GeometryModel3D
@@ -272,6 +273,10 @@ namespace Image_Transformation.Views
                 //Cancel any ongoing operation.
                 Cancel();
 
+                _width = (int)Images.First().Width;
+                _height = (int)Images.First().Height;
+                _depth = Images.Count();
+
                 try
                 {
                     Model3DGroup modelGroup = await CreateModelsAsync();
@@ -286,7 +291,8 @@ namespace Image_Transformation.Views
                 {
                     Debug.WriteLine("Operation canceled");
                 }
-            }
+                Images = new List<WriteableBitmap>();
+            }           
             System.Windows.Threading.Dispatcher.CurrentDispatcher.Invoke(() =>
             {
                 IsBusy = false;
@@ -304,7 +310,7 @@ namespace Image_Transformation.Views
         {
             Bitmap imageWithDarkToAlpha = ConvertFormatConvertedBitmapToBitmap(convertedImage);
 
-            System.Drawing.Imaging.BitmapData bData = imageWithDarkToAlpha.LockBits(new Rectangle(0, 0, imageWithDarkToAlpha.Width, imageWithDarkToAlpha.Height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
+            System.Drawing.Imaging.BitmapData bData = imageWithDarkToAlpha.LockBits(new Rectangle(0, 0, _width, _height), System.Drawing.Imaging.ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format64bppPArgb);
             
             int bitsPerPixel = convertedImage.Format.BitsPerPixel;
             
@@ -353,12 +359,11 @@ namespace Image_Transformation.Views
         {
             if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
             {
-                int depth = Images.Count();
                 int currentLayer = 0;
 
-                foreach (var image in Images)
+                for(int i = 0; i < _depth; i++)
                 {
-                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    MeshGeometry3D layerMesh = CreateLayerMesh(_depth + (-currentLayer * LayerSpace));
                     GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
                     DiffuseMaterial material = (DiffuseMaterial)oldLayer.Material.CloneCurrentValue();
 
@@ -396,12 +401,11 @@ namespace Image_Transformation.Views
         {
             if (Children.Count() >= 2 && Children[1] is ModelVisual3D model && model.Content is Model3DGroup group)
             {
-                int depth = Images.Count();
                 int currentLayer = 0;
 
-                foreach (var image in Images)
+                for(int i = 0; i < _depth; i++)
                 {
-                    MeshGeometry3D layerMesh = CreateLayerMesh(image.Height, image.Width, depth + (-currentLayer * LayerSpace));
+                    MeshGeometry3D layerMesh = CreateLayerMesh(_depth + (-currentLayer * LayerSpace));
                     GeometryModel3D oldLayer = (GeometryModel3D)group.Children[currentLayer];
                     group.Children.RemoveAt(currentLayer);
                     GeometryModel3D newLayer = new GeometryModel3D

@@ -27,7 +27,7 @@
             Visibility="{Binding ImageIsOpen, Converter={StaticResource toVisibility}}" />
         <views:ImageModelControl x:Name="imageModel"
                              Grid.Column="0"
-                             Images="{Binding Images}"
+                             Images="{Binding Images, Mode=TwoWay}"
                              LayerOpacity="{Binding Value, ElementName=OpacitySlider}"
                              LayerSpace="{Binding Value, ElementName=SpaceSlider}" />
 

@@ -13,7 +13,6 @@ namespace Image_Transformation
         public int Height { get; private set; }
         public int Layer { get; set; }
         public int LayerCount { get; private set; }
-        public bool MatrixChanged { get; private set; } = true;
         public double MetaFileBrightnessFactor { get; private set; }
         public string Path { get; set; }
         public int Width { get; private set; }

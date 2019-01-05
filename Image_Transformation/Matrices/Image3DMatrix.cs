@@ -12,7 +12,7 @@ namespace Image_Transformation
     public class Image3DMatrix
     {
         //The max height, width and depth is necessary to prevent OutOfMemoryExceptions because of too large images.
-        private const int MAX_DEPTH = 2048;
+        private const int MAX_DEPTH = 4096;
         private const int MAX_HEIGHT = 8192;
         private const int MAX_WIDTH = 8192;
         private readonly ushort[,,] _matrix;
